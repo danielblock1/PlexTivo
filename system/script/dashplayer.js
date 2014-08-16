@@ -103,7 +103,7 @@ function onManifestLoad(url, evt) {
   }
   var vid = document.getElementById('v');
   window.v = vid;  // For ease of debugging
-  vid.volume = 0.1;  // To avoid blasting your ears when debugging
+  vid.volume = 1;  // To avoid blasting your ears when debugging
 
   var msrc = new MediaSource();
   msrc.mpd = mpd;
