@@ -1,14 +1,8 @@
-PLEX for LG Home Theater
+PLEX for Tivo
 ==================================================================
-PLEX for LG Home Theater
+PLEX for Tivo
 
-http://plex.sithari.com.au
-
-Created by Simon J. Hogan
-
-Sith'ari Consulting Australia
 ==================================================================
-Copyright 2014 Simon J. Hogan (Sith'ari Consulting)
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
