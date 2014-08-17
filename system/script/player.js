@@ -29,12 +29,51 @@ function Player() {
 	this.debug = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "debug") == "1" ? true : false;
 };
 
+// These used for jump n minutes
+Player.prototype.addKey = function(num) {
+   var video = this.media;
+   // 5 sec timeout for keypad entry
+   video.timeout_keypad = new Date().getTime() + 5000;
+   if (video.keypad.length >= 3)
+      video.keypad = [];
+   video.keypad.push(num);
+   var message = "";
+   for (i=0; i<video.keypad.length; i++) {
+      message += video.keypad[i];
+   }
+   $("#message").text(message);
+   $("#message").show();
+}
+Player.prototype.getMinutes = function() {
+   var video = this.media;
+   var mins = 0;
+   if (video.timeout_keypad != -1) {
+      var multiplier = 1;
+      for (i=video.keypad.length-1; i>=0; i--) {
+         mins += video.keypad[i]*multiplier;
+         multiplier *= 10;
+      }
+   }
+   return mins;
+}
+
+Player.prototype.onPause = function() {
+   var video = this;
+   // Go to video info screen when playback has ended instead of just video freeze
+   var tolerance = 10; // 10 sec from the end tolerance
+   if ((video.duration - video.currentTime) < tolerance)
+      history.back(1);
+}
+
 Player.prototype.initialise = function()
 {
 	var self = this;
 	this.plex = new PLEX();
 	this.key = $.querystring().key;
 	this.media = document.getElementById("v");		
+   this.media.timeout_keypad = -1;
+   this.media.keypad = new Array();
+   this.media.addEventListener("pause", this.onPause, false);
 
 	//Direct play via standalone player
 	if (self.directPlay) {
@@ -510,9 +549,21 @@ Player.prototype.initControls = function()
 			history.back(1);
 			return;
 		}
+      
+		if (event.which >= 48 && event.which <= 57) { // 0-9
+			self.addKey(event.which-48);
+			return;
+		}
 
 		if (event.which == 19) { //Pause
-			self.pause();
+         if (self.speed == 0) {
+            self.speed = 1;
+            self.play();
+         }
+         else {
+            self.speed = 0;
+            self.pause();
+         }
 			return;
 		}
 		
@@ -570,7 +621,14 @@ Player.prototype.initControls = function()
 	$("#pause").click(function(event) {
 		event.stopPropagation();
 		event.preventDefault();
-		self.pause();
+      if (self.speed == 0) {
+         self.speed = 1;
+         self.play();
+      }
+      else {
+         self.speed = 0;
+         self.pause();
+      }
 		self.timerControls();
 	});
 
@@ -698,13 +756,13 @@ var self = this;
 	
 	clearInterval(this.timer);
 	this.timer = setInterval(function() {
-		if ($("#controls").is(":visible")) {
-			var pos = (self.media.currentTime/self.media.duration)*100;
-			self.progessbar.progress(pos);
-			if (self.media.currentTime) {
-				$("#progressTime").text(self.plex.getTimeFromSec(self.media.currentTime) + "/" + self.plex.getTimeFromSec(self.media.duration));
-			}
-		}
+      var pos = (self.media.currentTime/self.media.duration)*100;
+      self.progessbar.progress(pos);
+      if (self.media.currentTime) {
+         var c = self.plex.getTimeFromSec(self.media.currentTime).replace(/^00:/,"");
+         var d = self.plex.getTimeFromSec(self.media.duration).replace(/^00:/,"");
+         $("#progressTime").text(c + "/" + d);
+      }
 				
 		self.progressCount++;
 		
@@ -713,7 +771,15 @@ var self = this;
 			self.plex.reportProgress(self.mediaKey, "playing", self.media.currentTime);
 			self.progressCount = 0;
 		}
-		
+
+      var video = self.media;
+      // Auto hide numeric skip text
+      var date = new Date().getTime();
+      if (video.timeout_keypad > 0 && date >= video.timeout_keypad) {
+         $("#message").hide();
+         video.timeout_keypad = -1;
+         video.keypad = [];
+      }		
 	}, 1000);
 };
 
@@ -722,6 +788,12 @@ Player.prototype.rewind = function()
 	var pos = Number(this.media.currentTime);
 	var total = Number(this.media.duration);
 	this.scanStep = Math.round(total/this.scanStepRation);
+
+   // Jump n minutes processing
+   var mins = this.getMinutes();
+   if (mins > 0) {
+      this.scanStep = 60*mins;
+   }
 	
 	pos = (pos - this.scanStep) > 0 ? pos - this.scanStep : 0;
 	this.media.currentTime = pos;
@@ -736,8 +808,14 @@ Player.prototype.forward = function()
 	var pos = Number(this.media.currentTime);
 	var total = Number(this.media.duration);
 	this.scanStep = Math.round(total/this.scanStepRation);
+
+   // Jump n minutes processing
+   var mins = this.getMinutes();
+   if (mins > 0) {
+      this.scanStep = 60*mins;
+   }
 	
-	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1000;
+	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1;
 
 	this.media.currentTime=pos;
 	$("#message").html("<i class=\"glyphicon xlarge forward\"></i>");
