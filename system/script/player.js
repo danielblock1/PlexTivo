@@ -779,7 +779,11 @@ var self = this;
          $("#message").hide();
          video.timeout_keypad = -1;
          video.keypad = [];
-      }		
+      }
+      
+      // Hide Seeking message if visible and video is in play state
+      if (video.readyState == 4 && $("#loader").is(':visible'))
+         self.hideLoader();
 	}, 1000);
 };
 
@@ -796,8 +800,9 @@ Player.prototype.rewind = function()
    }
 	
 	pos = (pos - this.scanStep) > 0 ? pos - this.scanStep : 0;
-	this.media.currentTime = pos;
-	
+   
+   this.showLoader("Seeking");
+	this.media.currentTime = pos;	
 	$("#message").html("<i class=\"glyphicon xlarge rewind\"></i>");
 	$("#message").show();
 	$("#message").fadeOut(3000);	
@@ -817,6 +822,7 @@ Player.prototype.forward = function()
 	
 	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1;
 
+   this.showLoader("Seeking");
 	this.media.currentTime=pos;
 	$("#message").html("<i class=\"glyphicon xlarge forward\"></i>");
 	$("#message").show();
