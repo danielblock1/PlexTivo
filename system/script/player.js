@@ -567,7 +567,7 @@ Player.prototype.initControls = function()
 			return;
 		}
 		
-		if (event.which == 413) { //Stop
+		if (event.which == 413 || event.which == 405) { //Stop or A
 			self.stop();
 			return;
 		}		
@@ -840,10 +840,16 @@ this.media.pause();
 
 Player.prototype.stop = function()
 {
-	//$("#play").focus();
-	clearInterval(this.timer);	
-	this.media.pause();	
-	history.back(1);
+   //$("#play").focus();
+   clearInterval(this.timer);	
+   this.media.pause();
+   // Stop transcoder from continuing to run
+   var url = this.plex.getServerUrl() + '/video/:/transcode/universal/stop?session=' + this.plex.X_Plex_Client_Identifier;
+   retrieveDASHManifest(url);
+   // Without this timeout the transcoder stop doesn't always work
+   setTimeout( function() {
+      history.back(1);
+   }, 2000);
 };
 
 Player.prototype.seek = function(timeMS)
