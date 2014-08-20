@@ -29,6 +29,7 @@ MediaMetadata.prototype.initialise = function()
 	this.sectionKey = $.querystring().sectionKey;
 	this.key = decodeURIComponent($.querystring().key);
 
+
 	$("#menu a").tooltipster({position: "right"});
 
 
@@ -209,7 +210,7 @@ MediaMetadata.prototype.initialise = function()
 				self.toggleWatchedStatus();
 			});			
 			
-			$("#play").attr("href",  "player.html?key=" + mediaItem.attr("key") + "&autoplay=true");
+			$("#play").attr("href",  "player.html?key=" + mediaItem.attr("key") + "&autoplay=true&subtitleId="+$(".subtitles").text() +"&audioId="+$(".audio").text());
 			$("#play").show();
 			$("#play").focus();
 		}	else {
@@ -415,7 +416,7 @@ MediaMetadata.prototype.getMediaChildren = function(mediaType, key) {
 					case "episode":
 					case "movie":
 						self.showLoader("Loading");
-						location.href = "player.html?key=" + $(this).data("key") + "&autoplay=true";
+						location.href = "player.html?key=" + $(this).data("key") + "&autoplay=true&subtitleId="+$(".subtitles").text() +"&audioId="+$(".audio").text();
 						break;
 				}				
 			}	
@@ -511,16 +512,7 @@ MediaMetadata.prototype.getRowCount = function(query) {
 
 MediaMetadata.prototype.setDebug = function()
 {
-	var self = this;
-	var device = document.getElementById("device");
 
-	if (self.debug) {
-		if (window.NetCastGetUsedMemorySize) {
-			$("#debugMemory").text(window.NetCastGetUsedMemorySize());		
-		}
-	}	
-	
-	timer = setTimeout(function(){self.setDebug();}, 500);
 };
 
 MediaMetadata.prototype.toggleWatchedStatus = function()
@@ -566,7 +558,8 @@ MediaMetadata.prototype.subtitleDialog = function()
 		switch ($(this).data("key")) {
 			case "disabled":
 				$(".subtitles").text("Disabled");
-				self.plex.setSubtitleStream($(this).data("partKey"), "");
+
+                self.plex.setSubtitleStream($(this).data("partKey"), "");
 				break;
 			
 			case "close":
@@ -575,11 +568,14 @@ MediaMetadata.prototype.subtitleDialog = function()
 				
 			default:
 				$(".subtitles").text($(this).text());
-				self.plex.setSubtitleStream($(this).data("partKey"), $(this).data("streamKey"));
+                self.plex.setSubtitleStream($(this).data("partKey"), $(this).data("streamKey"));
 				break;
 		}
-		
-		$("#selectDialog").hide();
+       // $("#play").attr("href",  "player.html?key=" + mediaItem.attr("key") + "&autoplay=true&subtitleId="+$(".subtitles").text() +"&audioId="+$(".audio").text());
+        var currentURL = $("#play").attr("href").toString();
+        currentURL= currentURL.replace(/subtitleId=.*&/g,"subtitleId=" + $(".subtitles").text() +"&");
+        $("#play").attr("href",currentURL);
+        $("#selectDialog").hide();
 		$("#subtitles").focus();
 	});
 
@@ -642,7 +638,10 @@ MediaMetadata.prototype.audioDialog = function()
 			$(".audio").text($(this).text());
 			self.plex.setAudioStream($(this).data("partKey"), $(this).data("streamKey"));
 		}
-		$("#selectDialog").hide();
+        var currentURL = $("#play").attr("href").toString();
+        currentURL= currentURL.replace(/audioId=.*/g,"audioId=" + $(".audio").text());
+        $("#play").attr("href",currentURL);
+        $("#selectDialog").hide();
 		$("#audio").focus();
 	});
 

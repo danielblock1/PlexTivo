@@ -70,7 +70,9 @@ Player.prototype.initialise = function()
 	var self = this;
 	this.plex = new PLEX();
 	this.key = $.querystring().key;
-	this.media = document.getElementById("v");		
+	this.media = document.getElementById("v");
+    this.subtitleId = $.querystring().subtitleId;
+    this.audioId = $.querystring().audioId;
    this.media.timeout_keypad = -1;
    this.media.keypad = new Array();
    this.media.addEventListener("pause", this.onPause, false);
@@ -301,8 +303,8 @@ Player.prototype.openMedia = function(key)
 				$("#subtitles").show();	
 			}
 		} else {*/
-			//Transcode HLS - Chrome/Web profile
-			self.url = self.plex.getHlsTranscodeUrl(self.key);			retrieveDASHManifest(self.url);	
+			self.url = self.plex.getHlsTranscodeUrl(self.key);
+            retrieveDASHManifest(self.url);
 			console.log(self.url);
 	//	}
 		self.hideLoader();
@@ -311,10 +313,15 @@ Player.prototype.openMedia = function(key)
 			if (self.viewOffset) {
 				self.resumeDialog(Number(self.viewOffset));
 			} else {
-				$("#play").focus();
-				self.speed = 1;
-				self.play(self.speed);
-				self.disableSubtitles();
+                $("#play").focus();
+                self.speed = 1;
+                self.play(self.speed);
+                console.log(self.subtitleId);
+                if (self.subtitleId != null && self.subtitleId.toString() != "Disabled") {
+                    self.enableSubtitles((self.subtitleId));
+                } else {
+                    self.disableSubtitles();
+                }
 				//self.setDefaultStreams(); 
 			}
 		} else {
@@ -502,7 +509,7 @@ Player.prototype.languageDialog = function()
 		
 		if ($(this).data("languageCode") != "close") {
 			self.plex.setAudioStream($(this).data("partKey"), $(this).data("streamKey"));
-			self.setAudoLanguage($(this).data("languageCode"), $(this).data("label"));
+			self.setAudioLanguage($(this).data("languageCode"), $(this).data("label"));
 		}
 		$("#dialog").hide();
 		$("#language").focus();
@@ -857,20 +864,13 @@ Player.prototype.seek = function(timeMS)
     this.media.currentTime=timeMS/1000;
 };
 
-Player.prototype.enableSubtitles = function(key)
+Player.prototype.enableSubtitles = function(subtitleId)
 {	
-	if (key != "undefined") {
-		this.media.subtitle = this.plex.getServerUrl() + key;
-		this.media.subtitleOn = true;
-		$("#message").html("Subtitles On");
-		$("#message").show();
-		$("#message").fadeOut(3000);	
-	} else {
-		this.media.subtitleOn = true;
-		$("#message").html("Integrated Subtitles Not Supported!");
-		$("#message").show();
-		$("#message").fadeOut(3000);		
-	}
+
+	$("#message").html(decodeURI(subtitleId) + " Subtitles On");
+	$("#message").show();
+	$("#message").fadeOut(3000);
+
 };
 
 Player.prototype.disableSubtitles = function()
@@ -882,7 +882,7 @@ Player.prototype.disableSubtitles = function()
 	$("#message").fadeOut(3000);	
 };
 
-Player.prototype.setAudoLanguage = function(key, label)
+Player.prototype.setAudioLanguage = function(key, label)
 {
 	var code = this.getLanguageCode(key);
 	

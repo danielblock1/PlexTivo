@@ -29,6 +29,8 @@ function Media()
 	this.viewTotal = 0;
 	this.viewCount = 60;
 	this.viewCurrent = 0;
+
+
 		
 };
 
@@ -48,10 +50,7 @@ Media.prototype.initialise = function()
 	$("#menu a").tooltipster({position: "right"});
 	$("#menuFilterView a").tooltipster();
 	
-	//Enable page loading icon
-	if (window.NetCastSetPageLoadingIcon) {
-	    window.NetCastSetPageLoadingIcon('enabled');
-	}
+
 
 	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "largeText") == "1") {
 		$("body").addClass("xlarge");
@@ -512,11 +511,7 @@ Media.prototype.setDebug = function()
 	var self = this;
 	var device = document.getElementById("device");
 
-	if (self.debug) {
-		if (window.NetCastGetUsedMemorySize) {
-			$("#debugMemory").text(window.NetCastGetUsedMemorySize());		
-		}
-	}	
+
 	
 	timer = setTimeout(function(){self.setDebug();}, 500);
 };

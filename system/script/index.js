@@ -28,12 +28,21 @@ function Menu() {
 	this.scanErrorCount = 0;
 	this.windowHeight = $(window).height();
 	this.windowWidth = $(window).width();
-	
+	this.bandwidthCount =0;
 	var self = this;
 
+    this.bandwidthArray = [[0,'480p 2.0Mbps' ,'720x480', '60', '2000'],
+                              [1,'720p 3.0Mbps' ,'1280x720', '75', '3000'],
+                              [2,'720p 4.0Mbps' ,'1280x720', '100', '4000'],
+                              [3,'1080p 8.0Mbps' ,'1920x1080', '60', '8000'],
+                              [4,'1080p 10.0Mbps' ,'1920x1080', '75', '10000'],
+                              [5,'1080p 12.0Mbps' ,'1920x1080', '90', '12000'],
+                              [6,'1080p 20.0Mbps' ,'1920x1080', '100', '20000'],
+                              [7,'1080p 40.0Mbps' ,'1920x1080', '100', '40000']
+                           ];
 
 
-	//Set session ID if blank
+//Set session ID if blank
 	if (!localStorage.getItem(this.PLEX_SESSION_ID) || localStorage.getItem(this.PLEX_SESSION_ID) == "") {
 		localStorage.setItem(this.PLEX_SESSION_ID, this.plex.getSessionID());
 	}
@@ -98,7 +107,8 @@ function Menu() {
 		$("#recentlyAdded .content").scrollLeft(0);
 		$("#preview").fadeOut();
 		$("#navigator #sections a.selected").focus();
-	});	
+	});
+
 };
 
 Menu.prototype.serverSelection = function()
@@ -152,20 +162,25 @@ Menu.prototype.serverSelection = function()
 	}
 };
 
-Menu.prototype.initialise = function(focus)	{	
+Menu.prototype.initialise = function(focus)	{
+
 	var self = this;
+
 	var pms = this.plex.getServerUrl();
+
 	
 	self.showLoader("Searching");
 				
 	//Check PMS Server Set
 	if (!pms || !this.isValidUrl(self.plex.getServerUrl())) {
+
 		self.hideLoader();
 		this.settingsDialog(true);
 		$("#settingsMessage").show();
 		$("#settingsMessage").html(settings.language.dialogSettingsValidMessage);
 		$("#settingsMessage").fadeOut(5000);		
-	} else {		
+	} else {
+
 		self.plex.checkLibraryServerExists(function(xml) {
 			self.showLoader("Loading");
 			$("#serverName").text($(xml).find("MediaContainer:first").attr("friendlyName"));	
@@ -376,6 +391,7 @@ Menu.prototype.initialise = function(focus)	{
 			$("#settingsMessage").fadeOut(5000);
 		});
 	}
+
 };
 
 Menu.prototype.quickSearchMenu = function(event)
@@ -689,9 +705,41 @@ Menu.prototype.setCheckOption = function(item, optionName)
 	}
 };
 
+Menu.prototype.nextBandwidthOption = function(){
+    this.bandwidthCount++;
+
+    var self = this;
+    if(this.bandwidthCount >= this.bandwidthArray.length) {
+        this.bandwidthCount=0;
+    }
+    var bandwidth = this.bandwidthArray[this.bandwidthCount];
+    $("#options span#bandwidth").text(bandwidth[1]);
+    localStorage.setItem(this.PLEX_OPTIONS_PREFIX + "bandwidthSelection",bandwidth[0]);
+
+};
+
+Menu.prototype.prevBandwidthOption = function(){
+    var self = this;
+    this.bandwidthCount--;
+
+    if(this.bandwidthCount < 0) {
+        this.bandwidthCount=this.bandwidthArray.length -1;
+    }
+    var bandwidth = this.bandwidthArray[this.bandwidthCount];
+    $("#options span#bandwidth").text(bandwidth[1]);
+    localStorage.setItem(this.PLEX_OPTIONS_PREFIX + "bandwidthSelection",bandwidth[0]);
+
+};
+
 Menu.prototype.optionsDialog = function(event)
 {
 	var self = this;
+
+    if(localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "bandwidthSelection") != null){
+        var index = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "bandwidthSelection");
+        var bandwidth = this.bandwidthArray[Number(index)];
+        $("#options span#bandwidth").text(bandwidth[1]);
+    }
 	
 	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "enableTranscoding") == "1") {
 		$("#options a#optionTranscoding i").removeClass("unchecked");
@@ -748,6 +796,18 @@ Menu.prototype.optionsDialog = function(event)
 	$("#options a").hover(function() {
 		$(this).focus();
 	});
+
+
+
+    $("#options a#bandwidthUp").click(function(event) {
+        event.preventDefault();
+        self.nextBandwidthOption();
+     });
+
+    $("#options a#bandwidthDown").click(function(event) {
+        event.preventDefault();
+        self.prevBandwidthOption();
+    });
 
 	$("#options a#optionTranscoding").click(function(event) {
 		event.preventDefault();
@@ -839,7 +899,7 @@ Menu.prototype.optionsDialog = function(event)
 		}
 		
 		//Back
-		if (event.which == 461 || event.which == 27) {		
+		if (event.which == 461 || event.which == 27) {
 			$("#navigator a.selected").focus();
 			event.preventDefault();
 			event.stopPropagation();				
@@ -885,8 +945,8 @@ Menu.prototype.toggleMenu = function()
 Menu.prototype.settingsDialog = function(init)
 {
 	var self = this;
-	var device = document.getElementById("device");
-	var ip = device.net_ipAddress;
+	//var device = document.getElementById("device");
+	//var ip = device.net_ipAddress;
 	var servers = new Array();
 	
 	$("#config").fadeIn(400, function() {

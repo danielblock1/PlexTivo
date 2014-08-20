@@ -166,7 +166,7 @@ PLEX.prototype.getMediaMetadata = function(key, callback) {
 };
 
 PLEX.prototype.reportProgress = function(key, state, time) {
-	$.get(this.getServerUrl() + "/:/progress?key=" + key + "&identifier=com.plexapp.plugins.library&time=" + time + "&state=" + state, null);
+	$.get(this.getServerUrl() + "/:/progress?key=" + key + "&identifier=com.plexapp.plugins.library&time=" + Math.round(time * 1000) + "&state=" + state, null);
 };
 
 PLEX.prototype.setWatched = function(key, callback) {
@@ -178,14 +178,16 @@ PLEX.prototype.setUnwatched = function(key, callback) {
 };
 
 PLEX.prototype.setAudioStream = function(partKey, streamKey) {
-	$.ajax({
+
+    $.ajax({
 		type: "PUT",
 		url: this.getServerUrl() + "/library/parts/" + partKey + "?audioStreamID=" + streamKey
 	});
 };
 
 PLEX.prototype.setSubtitleStream = function(partKey, streamKey) {
-	$.ajax({
+	console.log(this.getServerUrl() + "/library/parts/" + partKey + "?subtitleStreamID=" + streamKey);
+    $.ajax({
 		type: "PUT",
 		url: this.getServerUrl() + "/library/parts/" + partKey + "?subtitleStreamID=" + streamKey
 	});
@@ -424,7 +426,7 @@ PLEX.prototype.getMediaPreviewHtml = function(xml) {
 	var mediaType = mediaItem.attr("type");	
 	var audioStream = $(xml).find("Media:first Stream[streamType='2'][selected='1']").length > 0 ? $(xml).find("Media:first Stream[streamType='2'][selected='1']") : $(xml).find("Media:first Stream[streamType='2']:first");
 	var subtitleStream = $(xml).find("Media:first Stream[streamType='3'][selected='1']").length > 0 ? $(xml).find("Media:first Stream[streamType='3'][selected='1']") : $(xml).find("Media:first Stream[streamType='3']");	
-	
+	console.log("test:" + $(subtitleStream).length);
 	var html = "<div class=\"" + mediaType + "\">";
 	 
 	switch(mediaType) {
@@ -461,8 +463,8 @@ PLEX.prototype.getMediaPreviewHtml = function(xml) {
 			if (mediaItem.find("Role").length > 0) { html += "<div class=\"roles\">" + this.getAttributeList(mediaItem.find("Role"), "tag", ", ") + "</div>"; }
 			
 			if (audioStream.length > 0) { html += "<div class=\"audio\">" + (audioStream.attr("language") || "Unknown") + " (" + audioStream.attr("codec") + ")</div>"; }
-			if (subtitleStream.length > 0) { 
-				if (subtitleStream.length == 1) { 
+			if (subtitleStream.length > 0) {
+				if (subtitleStream.length == 1 && subtitleStream.attr("selected") !=null) {
 					html += "<div class=\"subtitles\">" + subtitleStream.attr("language") + " (" + subtitleStream.attr("format") +")</div>"; 
 				} else {
 					html += "<div class=\"subtitles\">Disabled</div>";
@@ -573,7 +575,7 @@ PLEX.prototype.getMediaPreviewHtml = function(xml) {
 			
 			if (audioStream.length > 0) { html += "<div class=\"audio\">" + (audioStream.attr("language") || "Unknown") + " (" + audioStream.attr("codec") + ")</div>"; }
 			if (subtitleStream.length > 0) { 
-				if (subtitleStream.length == 1) { 
+				if (subtitleStream.length == 1 && subtitleStream.attr("selected") !=null) {
 					html += "<div class=\"subtitles\">" + subtitleStream.attr("language") + " (" + subtitleStream.attr("format") +")</div>"; 
 				} else {
 					html += "<div class=\"subtitles\">Disabled</div>";
