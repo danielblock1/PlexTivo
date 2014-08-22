@@ -14,6 +14,12 @@ either express or implied. See the License for the specific language governing p
 and limitations under the License.
 **/
 
+#videoPlayer {
+    margin-left: auto;
+    margin-right: auto;
+    display: block
+}
+
 body {
 	margin: 0px;
 	background-color: #000000;

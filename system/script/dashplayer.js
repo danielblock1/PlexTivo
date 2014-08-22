@@ -113,7 +113,7 @@ function onManifestLoad(url, evt) {
   msrc.attachTo(vid);
   window.msrc = msrc;
 
-  var bufbar = document.getElementById('bufbar');
+  //var bufbar = document.getElementById('bufbar');
   window.setInterval(updateBufferBar.bind(null, vid, msrc, bufbar), 1000);
 
   vid.addEventListener('seeking', onSeeking.bind(vid, msrc));
@@ -316,7 +316,7 @@ function onProgress(msrc) {
     // against the current time to determine if we're stalling
     var range = findRangeForPlaybackTime(buf, this.currentTime);
     if(range)
-      //console.log("range:" + range +" start:"+ range.start + " end: " + range.end + ": currentTime" + this.currentTime);
+      //console.log("range:" + range +" start:"+ range.start + " end: " + range.end + ": currentTime" + this.currentTime + "url:" + buf.url);
     if (!range) {
       //console.log("no range");
         //this.play();
@@ -451,8 +451,9 @@ function resetSourceBuffer(buf, reason) {
   buf.reset_reason = reason || null;
   // Shame on me for using window.
   if (window.msrc.readyState != 'open') return;
-
   buf.abort();
+   //buf.remove(0,10);
+   //buf.removeAllRanges();
 }
 
 function onRepChange(buf, evt) {
@@ -483,13 +484,13 @@ var MIN_RESUME_SECS = 5;
 
 function queueAppend(buf, val) {
   if (buf.updating) {
-
+    console.log("queuing" + buf.url);
     buf.queue.push(val);
   } else if (buf.appendBuffer) {
-
+      console.log("appendBuffer:" + buf.url);
       buf.appendBuffer(val);
   } else {
-
+      console.log("append:" + buf.url);
     buf.append(new Uint8Array(val));
   }
 }
@@ -671,6 +672,8 @@ function makeXHR(buf, url, is_init) {
   xhr.lastTime = null;
   xhr.lastSize = null;
   xhr.retryCount = 0;
+  xhr.timeout = 3000;
+  xhr.ontimeout = function () { console.log("Timed out!!!"); }
   xhr.addEventListener('progress', onXHRProgress);
   xhr.send();
 

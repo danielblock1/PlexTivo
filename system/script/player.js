@@ -278,8 +278,12 @@ Player.prototype.openMedia = function(key)
 		self.mediaUrl = $(xml).find("Part:first").attr("key");
 		self.viewOffset = $(xml).find("Video:first").attr("viewOffset");
 		self.duration = $(xml).find("Video:first").attr("duration"); 
-		
-		//To Do: Check for multiple media streams
+        self.duration = Number(self.duration)/1000;
+
+        self.aspectRatio = $(xml).find("Media:first").attr("aspectRatio");
+
+
+        //To Do: Check for multiple media streams
 		/*if (self.directPlay) {
 			//Direct play
 			
@@ -303,8 +307,15 @@ Player.prototype.openMedia = function(key)
 				$("#subtitles").show();	
 			}
 		} else {*/
+        var options = {};
+       // options.offset = 3000;
+            var height =Math.round(1280/self.aspectRatio);
+            self.media.height = height;
 			self.url = self.plex.getHlsTranscodeUrl(self.key);
-            retrieveDASHManifest(self.url);
+            self.media.setAttribute('src', self.url);
+            self.media.load();
+            self.media.play();
+
 			console.log(self.url);
 	//	}
 		self.hideLoader();
@@ -763,18 +774,18 @@ var self = this;
 	
 	clearInterval(this.timer);
 	this.timer = setInterval(function() {
-      var pos = (self.media.currentTime/self.media.duration)*100;
+      var pos = (self.media.currentTime/self.duration)*100;
       self.progessbar.progress(pos);
       if (self.media.currentTime) {
          var c = self.plex.getTimeFromSec(self.media.currentTime).replace(/^00:/,"");
-         var d = self.plex.getTimeFromSec(self.media.duration).replace(/^00:/,"");
+         var d = self.plex.getTimeFromSec(self.duration).replace(/^00:/,"");
          $("#progressTime").text(c + "/" + d);
       }
 				
 		self.progressCount++;
 		
 		if (self.progressCount >= 30) {
-			self.setWatchedStatus(self.mediaKey, self.media.duration, self.media.currentTime);
+			self.setWatchedStatus(self.mediaKey, self.duration, self.media.currentTime);
 			self.plex.reportProgress(self.mediaKey, "playing", self.media.currentTime);
 			self.progressCount = 0;
 		}
@@ -797,7 +808,7 @@ var self = this;
 Player.prototype.rewind = function()
 {
 	var pos = Number(this.media.currentTime);
-	var total = Number(this.media.duration);
+	var total = Number(this.duration);
 	this.scanStep = Math.round(total/this.scanStepRation);
 
    // Jump n minutes processing
@@ -809,7 +820,8 @@ Player.prototype.rewind = function()
 	pos = (pos - this.scanStep) > 0 ? pos - this.scanStep : 0;
    
    this.showLoader("Seeking");
-	this.media.currentTime = pos;	
+    this.seek(pos*1000);
+	//this.media.currentTime = pos;
 	$("#message").html("<i class=\"glyphicon xlarge rewind\"></i>");
 	$("#message").show();
 	$("#message").fadeOut(3000);	
@@ -818,7 +830,7 @@ Player.prototype.rewind = function()
 Player.prototype.forward = function()
 {
 	var pos = Number(this.media.currentTime);
-	var total = Number(this.media.duration);
+	var total = Number(this.duration);
 	this.scanStep = Math.round(total/this.scanStepRation);
 
    // Jump n minutes processing
@@ -830,7 +842,8 @@ Player.prototype.forward = function()
 	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1;
 
    this.showLoader("Seeking");
-	this.media.currentTime=pos;
+	//this.media.currentTime=pos;
+    this.seek(pos*1000);
 	$("#message").html("<i class=\"glyphicon xlarge forward\"></i>");
 	$("#message").show();
 	$("#message").fadeOut(3000);	
@@ -845,14 +858,23 @@ this.media.pause();
 	this.media.pause();
 };
 
+Player.prototype.stopTranscoding=function(){
+
+    var url = this.plex.getServerUrl() + '/video/:/transcode/universal/stop?session=' + this.plex.X_Plex_Client_Identifier;
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url);
+    xhr.send();
+};
+
 Player.prototype.stop = function()
 {
    //$("#play").focus();
    clearInterval(this.timer);	
    this.media.pause();
    // Stop transcoder from continuing to run
-   var url = this.plex.getServerUrl() + '/video/:/transcode/universal/stop?session=' + this.plex.X_Plex_Client_Identifier;
-   retrieveDASHManifest(url);
+   //var url = this.plex.getServerUrl() + '/video/:/transcode/universal/stop?session=' + this.plex.X_Plex_Client_Identifier;
+   //retrieveDASHManifest(url);
+   this.stopTranscoding();
    // Without this timeout the transcoder stop doesn't always work
    setTimeout( function() {
       history.back(1);
@@ -861,7 +883,23 @@ Player.prototype.stop = function()
 
 Player.prototype.seek = function(timeMS)
 {
-    this.media.currentTime=timeMS/1000;
+    console.log("seeking to:" + timeMS);
+    //this.media.currentTime=Math.round(timeMS/1000);
+    this.media.pause();
+  //  this.stopTranscoding();
+    var options = {};
+    options.offset = Math.round(timeMS/1000);
+    var url = this.plex.getHlsTranscodeUrl(this.key,options);
+   /// $("#v").remove();
+    //var video = $('<video id="v1" width="100%" height="100%" src="'+url+'"></video>');
+   // $("#video").append(video);
+    this.media.setAttribute('src', url);
+   /// this.media = document.getElementById("v1");
+   this.media.load();
+   this.media.play();
+    console.log("playing");
+    console.log("Seek URL:" +url);
+    //retrieveDASHManifest(url);
 };
 
 Player.prototype.enableSubtitles = function(subtitleId)

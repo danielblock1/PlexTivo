@@ -20,12 +20,12 @@ function PLEX() {
 	this.PLEX_OPTIONS_PREFIX = "plexOptions-";	
 
 	this.X_Plex_Client_Identifier = localStorage.getItem(this.PLEX_SESSION_ID);
-	this.X_Plex_Product = "Web%20Client";
-	this.X_Plex_Device= "Mac";
-	this.X_Plex_Platform = "Chrome";
+	this.X_Plex_Product = "Tivo";
+	this.X_Plex_Device= "Tivo";
+	this.X_Plex_Platform = "Tivo";
 	this.X_Plex_Platform_Version = "7";
 	this.X_Plex_Version = "1.2.12";
-	this.X_Plex_Device_Name = "Plex%2FWeb%20(Chrome)";
+	this.X_Plex_Device_Name = "Tivo";
 	
 	var d = new Date();
 	this.time = d.getTime();	
@@ -690,10 +690,10 @@ PLEX.prototype.getHlsTranscodeUrl = function(key, options) {
 	var session = localStorage.getItem(this.PLEX_SESSION_ID);
 	var mediaIndex = options.mediaIndex || "0";
 	var partIndex = options.partIndex || "0";
-	var protocol = options.protocol || "dash";
+	var protocol = options.protocol || "hls";
 	var offset = options.offset || "0";
 	var fastSeek = options.fastSeek || "1";
-	var directPlay = options.directPlay || "1";
+	var directPlay = options.directPlay || "0";
 	var directStream = options.directStream || "1";
 	var videoQuality = options.videoQuality || "75";
 	var maxVideoBitrate = options.maxVideoBitrate || "3000";
@@ -701,7 +701,8 @@ PLEX.prototype.getHlsTranscodeUrl = function(key, options) {
 	var audioBoost = options.audioBoost || "100";
 	var videoResolution = "1280x720";
 
-	var url = "/video/:/transcode/universal/start.mpd?";
+	//var url = "/video/:/transcode/universal/start.mpd?";
+    var url = "/video/:/transcode/universal/start.m3u8?";
 	url += "path=" + encodeURIComponent(path);
 	url += "&mediaIndex=" + mediaIndex;
 	url += "&partIndex=" + partIndex;
