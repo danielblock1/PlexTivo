@@ -881,7 +881,7 @@ PLEX.prototype.getHlsTranscodeUrl = function (key, options) {
     var maxVideoBitrate = options.maxVideoBitrate || "3000";
     var subtitleSize = options.subtitleSize || "90";
     var audioBoost = options.audioBoost || "100";
-    var videoResolution = options.videoResolution || "1280x720";
+    var videoResolution = "1280x720";
 
 
     //var url = "/video/:/transcode/universal/start.mpd?";
