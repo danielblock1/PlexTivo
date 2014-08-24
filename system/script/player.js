@@ -197,16 +197,7 @@ Player.prototype.initialise = function () {
 };
 
 Player.prototype.getTranscodingOptions = function () {
-    var bandwidthArray = [
-        [0, '480p 2.0Mbps' , '720x480', '60', '2000'],
-        [1, '720p 3.0Mbps' , '1280x720', '75', '3000'],
-        [2, '720p 4.0Mbps' , '1280x720', '100', '4000'],
-        [3, '1080p 8.0Mbps' , '1920x1080', '60', '8000'],
-        [4, '1080p 10.0Mbps' , '1920x1080', '75', '10000'],
-        [5, '1080p 12.0Mbps' , '1920x1080', '90', '12000'],
-        [6, '1080p 20.0Mbps' , '1920x1080', '100', '20000'],
-        [7, '1080p 40.0Mbps' , '1920x1080', '100', '40000']
-    ];
+    var bandwidthArray = this.plex.getAvailableBandwidths();
 
     var options = {};
     var bandwidth = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "bandwidthSelection");

@@ -35,9 +35,11 @@ function PLEX() {
 
 // Configuration & Settings
 
+
+
 PLEX.prototype.getPlexHeight = function () {
     var height = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_HEIGHT);
-    if (height == null) {
+    if (height == null || height == "null") {
         height = window.innerHeight;
         console.log("No Height Set, Setting Height to default: " + height)
 
@@ -49,7 +51,7 @@ PLEX.prototype.getPlexHeight = function () {
 
 PLEX.prototype.getPlexWidth = function () {
     var width = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_WIDTH);
-    if (width == null) {
+    if (width == null || width == "null") {
         width = window.innerWidth;
         console.log("No Width Set, Setting Width to default: " + width)
         this.setPlexWidth(width);
@@ -65,6 +67,20 @@ PLEX.prototype.setPlexHeight = function (height) {
 
 PLEX.prototype.setPlexWidth = function (width) {
     localStorage.setItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_WIDTH, width);
+};
+
+PLEX.prototype.getAvailableBandwidths = function() {
+    var bandwidthArray = [
+        [0, '480p 2.0Mbps' , '720x480', '60', '2000'],
+        [1, '720p 3.0Mbps' , '1280x720', '75', '3000'],
+        [2, '720p 4.0Mbps' , '1280x720', '100', '4000']//,
+       /* [3, '1080p 8.0Mbps' , '1920x1080', '60', '8000'],
+        [4, '1080p 10.0Mbps' , '1920x1080', '75', '10000'],
+        [5, '1080p 12.0Mbps' , '1920x1080', '90', '12000'],
+        [6, '1080p 20.0Mbps' , '1920x1080', '100', '20000'],
+        [7, '1080p 40.0Mbps' , '1920x1080', '100', '40000'];*/
+    ];
+    return bandwidthArray;
 };
 
 PLEX.prototype.setServerUrl = function (url) {
@@ -881,7 +897,7 @@ PLEX.prototype.getHlsTranscodeUrl = function (key, options) {
     var maxVideoBitrate = options.maxVideoBitrate || "3000";
     var subtitleSize = options.subtitleSize || "90";
     var audioBoost = options.audioBoost || "100";
-    var videoResolution = "1280x720";
+    var videoResolution = options.videoResolution || "1280x720";
 
 
     //var url = "/video/:/transcode/universal/start.mpd?";
