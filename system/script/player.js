@@ -241,8 +241,7 @@ Player.prototype.openMedia = function (key) {
 
         self.aspectRatio = $(xml).find("Media:first").attr("aspectRatio");
 
-        if (self.windowHeight != null && self.windowWidth != null)
-           self.setVideoSize(self.media, self.aspectRatio, self.windowHeight, self.windowWidth);
+        self.setVideoSize(self.media, self.aspectRatio, self.windowHeight, self.windowWidth);
 
         self.url = self.plex.getHlsTranscodeUrl(self.key, self.getTranscodingOptions());
         self.media.setAttribute('src', self.url);
@@ -274,6 +273,11 @@ Player.prototype.openMedia = function (key) {
     });
 };
 Player.prototype.setVideoSize = function (videoElem, aspectRatio, windowHeight, windowWidth) {
+    if (windowHeight == null)
+       windowHeight = window.innerHeight;
+    if (windowWidth == null)
+       windowWidth = window.innerWidth;
+
     var vidHeight = Math.round(windowWidth / aspectRatio);
     var vidWidth = Math.round(windowHeight * aspectRatio);
     if (vidHeight > windowHeight) {
