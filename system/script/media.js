@@ -313,10 +313,11 @@ Media.prototype.view = function (section, key, filter, filterKey) {
                 $("#title").text($container.attr("title1") + " - " + $container.attr("title2"));
                 break;
         }
-        var html = "";
+        var html = [];
+        var i=0;
         $(xml).find("Directory,Video,Photo,Artist,Track").each(function (index, item) {
             if (localStorage.getItem(self.PLEX_VIEW_MODE) == "list") {
-                html += self.plex.getListHtml(index, $(this).attr("title"), self.section, $(this).attr("type"), $(this).attr("key"),
+                html[i++]= self.plex.getListHtml(index, $(this).attr("title"), self.section, $(this).attr("type"), $(this).attr("key"),
                     {"artist": $(this).attr("parentTitle"),
                         "art": $(this).attr("art"),
                         "series": $(this).attr("grandparentTitle"),
@@ -335,7 +336,7 @@ Media.prototype.view = function (section, key, filter, filterKey) {
                         "sectionKey": key
                     });
             } else {
-                html += self.plex.getThumbHtml(index, $(this).attr("title"), self.section, $(this).attr("type"), $(this).attr("key"),
+                html[i++]= self.plex.getThumbHtml(index, $(this).attr("title"), self.section, $(this).attr("type"), $(this).attr("key"),
                     {"thumb": $(this).attr("thumb"),
                         "parentThumb": $(this).attr("parentThumb"),
                         "grandparentThumb": $(this).attr("grandparentThumb"),
@@ -360,7 +361,7 @@ Media.prototype.view = function (section, key, filter, filterKey) {
             }
 
         });
-        $("#mediaViewContent ul").append(html);
+        $("#mediaViewContent ul").append(html.join(''));
 
         $(".thumb").lazyload({
             placeholder: 'system/images/poster.png',
