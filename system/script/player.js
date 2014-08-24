@@ -18,10 +18,13 @@
 function currentTime() {
    var video = document.getElementById("v");
    var current = video.currentTime;
-   if (video.timeOffset > 0)
-      current -= video.timeOffset;
-   if (current < 0)
-      current = 0;
+   var initial = 0;
+   if (typeof video.viewOffset !== 'undefined')
+      initial = video.viewOffset;
+   if (video.timeOffset > initial)
+      current -= (video.timeOffset-initial);
+   if (current < initial)
+      current = initial;
    return current;
 }
 
@@ -78,7 +81,10 @@ Player.prototype.onPause = function () {
 
 Player.prototype.timeUpdate = function () {
    // This is to workaround offset in currentTime using hls & http protocols
-   if (this.timeOffset <= 0)
+   var initial = 0;
+   if (typeof this.viewOffset !== 'undefined')
+      initial = this.viewOffset;
+   if (this.timeOffset <= initial)
       this.timeOffset = this.currentTime;
 }
 
@@ -309,6 +315,7 @@ Player.prototype.setVideoSize = function (videoElem, aspectRatio, windowHeight, 
 
 Player.prototype.resumeDialog = function (ms) {
     var self = this;
+    self.stopTranscoding();
     var time = this.plex.getTimeFromMS(ms);
     var html = "<a data-key-index=\"100\" id=\"resume\" href=\"\"><span class=\"option\">Resume from " + time + "</span></a>";
     html += "<a data-key-index=\"101\" id=\"start\" href=\"\"><span class=\"option\">Start from beginning</span></a>";
@@ -322,23 +329,20 @@ Player.prototype.resumeDialog = function (ms) {
 
     $("#resume").click(function () {
         event.preventDefault();
-
-
-        //self.showLoader("Seeking");
+        self.showLoader("Seeking");
+        self.media.viewOffset = ms/1000;
         self.seek(ms);
         self.resume = true;
-        //self.plex.getTimeline(self.mediaKey, "playing", ms, self.duration);
-
-
         self.speed = 1;
         self.play(self.speed);
-        self.setDefaultStreams();
         $("#dialog").hide();
         $("#play").focus();
     });
 
     $("#start").click(function () {
         event.preventDefault();
+        self.media.setAttribute('src', self.url);
+        self.media.load();
         self.speed = 1;
         self.play(self.speed);
         self.setDefaultStreams();
@@ -849,15 +853,18 @@ Player.prototype.seek = function (timeMS) {
     this.media.pause();
     this.stopTranscoding();
 
-    var options = this.getTranscodingOptions();
-    options.offset = Math.round(timeMS / 1000);
-    var url = this.plex.getHlsTranscodeUrl(this.key, options);
+   // Without this timeout the transcoder stop doesn't always work
+    setTimeout(function (player) {
+       var options = player.getTranscodingOptions();
+       options.offset = Math.round(timeMS / 1000);
+       var url = player.plex.getHlsTranscodeUrl(player.key, options);
 
-    this.media.setAttribute('src', url);
+       player.media.setAttribute('src', url);
 
-    this.media.load();
-    this.media.play();
-    console.log("Seek URL:" + url);
+       player.media.load();
+       player.media.play();
+       console.log("Seek URL:" + url);
+    }, 1000, this);
 
 };
 
