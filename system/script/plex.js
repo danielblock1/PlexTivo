@@ -886,6 +886,8 @@ PLEX.prototype.getHlsTranscodeUrl = function (key, options) {
 
     //var url = "/video/:/transcode/universal/start.mpd?";
     var url = "/video/:/transcode/universal/start.m3u8?";
+    if (protocol == "http")
+       url = "/video/:/transcode/universal/start.ts?";
     url += "path=" + encodeURIComponent(path);
     url += "&mediaIndex=" + mediaIndex;
     url += "&partIndex=" + partIndex;

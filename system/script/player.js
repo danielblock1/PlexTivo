@@ -14,6 +14,16 @@
  and limitations under the License.
  **/
 
+// hls & http protocols have currentTime offset for some reason, this is to workaround it
+function currentTime() {
+   var video = document.getElementById("v");
+   var offset = 10;
+   var current = video.currentTime-offset;
+   if (current < 0)
+      current = 0;
+   return current;
+}
+
 function Player() {
     this.PLEX_OPTIONS_PREFIX = "plexOptions-";
 
@@ -61,7 +71,7 @@ Player.prototype.onPause = function () {
     var video = this;
     // Go to video info screen when playback has ended instead of just video freeze
     var tolerance = 10; // 10 sec from the end tolerance
-    if ((video.duration - video.currentTime) < tolerance)
+    if (Math.abs(video.dur - currentTime()) < tolerance)
         history.back(1);
 }
 
@@ -212,11 +222,12 @@ Player.prototype.openMedia = function (key) {
         self.viewOffset = $(xml).find("Video:first").attr("viewOffset");
         self.duration = $(xml).find("Video:first").attr("duration");
         self.duration = Number(self.duration) / 1000;
+        self.media.dur = self.duration;
 
         self.aspectRatio = $(xml).find("Media:first").attr("aspectRatio");
 
-
-        self.setVideoSize(self.media, self.aspectRatio, self.windowHeight, self.windowWidth);
+        if (self.windowHeight != null && self.windowWidth != null)
+           self.setVideoSize(self.media, self.aspectRatio, self.windowHeight, self.windowWidth);
 
         self.url = self.plex.getHlsTranscodeUrl(self.key, self.getTranscodingOptions());
         self.media.setAttribute('src', self.url);
@@ -714,10 +725,10 @@ Player.prototype.play = function (speed) {
 
     clearInterval(this.timer);
     this.timer = setInterval(function () {
-        var pos = (self.media.currentTime / self.duration) * 100;
+        var pos = (currentTime() / self.duration) * 100;
         self.progessbar.progress(pos);
-        if (self.media.currentTime) {
-            var c = self.plex.getTimeFromSec(self.media.currentTime).replace(/^00:/, "");
+        if (currentTime()) {
+            var c = self.plex.getTimeFromSec(currentTime()).replace(/^00:/, "");
             var d = self.plex.getTimeFromSec(self.duration).replace(/^00:/, "");
             $("#progressTime").text(c + "/" + d);
         }
@@ -725,8 +736,8 @@ Player.prototype.play = function (speed) {
         self.progressCount++;
 
         if (self.progressCount >= 30) {
-            self.setWatchedStatus(self.mediaKey, self.duration, self.media.currentTime);
-            self.plex.reportProgress(self.mediaKey, "playing", self.media.currentTime);
+            self.setWatchedStatus(self.mediaKey, self.duration, currentTime());
+            self.plex.reportProgress(self.mediaKey, "playing", currentTime());
             self.progressCount = 0;
         }
 
@@ -746,7 +757,7 @@ Player.prototype.play = function (speed) {
 };
 
 Player.prototype.rewind = function () {
-    var pos = Number(this.media.currentTime);
+    var pos = Number(currentTime());
     var total = Number(this.duration);
     this.scanStep = Math.round(total / this.scanStepRation);
 
@@ -767,7 +778,7 @@ Player.prototype.rewind = function () {
 };
 
 Player.prototype.forward = function () {
-    var pos = Number(this.media.currentTime);
+    var pos = Number(currentTime());
     var total = Number(this.duration);
     this.scanStep = Math.round(total / this.scanStepRation);
 
@@ -792,7 +803,7 @@ Player.prototype.pause = function () {
     //$("#play").focus();
     clearInterval(this.timer);
     //onPause();
-    this.plex.reportProgress(this.mediaKey, "paused", this.media.currentTime);
+    this.plex.reportProgress(this.mediaKey, "paused", currentTime());
 
 };
 
@@ -809,10 +820,10 @@ Player.prototype.stop = function () {
     clearInterval(this.timer);
     this.media.pause();
 
-    this.plex.reportProgress(this.mediaKey, "stopped", this.media.currentTime);
+    this.plex.reportProgress(this.mediaKey, "stopped", currentTime());
     this.plex.getTimeline(this.mediaKey, "stopped", 0, 0);
-    if ((this.duration / this.media.currentTime) >= 0.9) {
-        this.setWatchedStatus(this.mediaKey, this.duration, this.media.currentTime);
+    if ((this.duration / currentTime()) >= 0.9) {
+        this.setWatchedStatus(this.mediaKey, this.duration, currentTime());
         this.plex.reportProgress(this.mediaKey, "stopped", 0);
         this.plex.getTimeline(this.mediaKey, "stopped", 0, 0);
     }
