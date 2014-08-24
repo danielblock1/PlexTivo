@@ -17,8 +17,9 @@
 // hls & http protocols have currentTime offset for some reason, this is to workaround it
 function currentTime() {
    var video = document.getElementById("v");
-   var offset = 10;
-   var current = video.currentTime-offset;
+   var current = video.currentTime;
+   if (video.timeOffset > 0)
+      current -= video.timeOffset;
    if (current < 0)
       current = 0;
    return current;
@@ -75,16 +76,24 @@ Player.prototype.onPause = function () {
         history.back(1);
 }
 
+Player.prototype.timeUpdate = function () {
+   // This is to workaround offset in currentTime using hls & http protocols
+   if (this.timeOffset <= 0)
+      this.timeOffset = this.currentTime;
+}
+
 Player.prototype.initialise = function () {
     var self = this;
     this.plex = new PLEX();
     this.key = $.querystring().key;
     this.media = document.getElementById("v");
+    this.media.timeOffset = -1;
     this.subtitleId = $.querystring().subtitleId;
     this.audioId = $.querystring().audioId;
     this.media.timeout_keypad = -1;
     this.media.keypad = new Array();
     this.media.addEventListener("pause", this.onPause, false);
+    this.media.addEventListener("timeupdate", this.timeUpdate, false);
     this.windowHeight = this.plex.getPlexHeight();
     this.windowWidth = this.plex.getPlexWidth();
 
