@@ -273,11 +273,6 @@ Player.prototype.openMedia = function (key) {
     });
 };
 Player.prototype.setVideoSize = function (videoElem, aspectRatio, windowHeight, windowWidth) {
-    if (windowHeight == null)
-       windowHeight = window.innerHeight;
-    if (windowWidth == null)
-       windowWidth = window.innerWidth;
-
     var vidHeight = Math.round(windowWidth / aspectRatio);
     var vidWidth = Math.round(windowHeight * aspectRatio);
     if (vidHeight > windowHeight) {

@@ -37,7 +37,7 @@ function PLEX() {
 
 PLEX.prototype.getPlexHeight = function () {
     var height = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_HEIGHT);
-    if (height == "null") {
+    if (height == null) {
         height = window.innerHeight;
         console.log("No Height Set, Setting Height to default: " + height)
 
@@ -49,7 +49,7 @@ PLEX.prototype.getPlexHeight = function () {
 
 PLEX.prototype.getPlexWidth = function () {
     var width = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_WIDTH);
-    if (width == "null") {
+    if (width == null) {
         width = window.innerWidth;
         console.log("No Width Set, Setting Width to default: " + width)
         this.setPlexWidth(width);
