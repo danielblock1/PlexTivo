@@ -898,7 +898,9 @@ PLEX.prototype.getHlsTranscodeUrl = function (key, options) {
     var subtitleSize = options.subtitleSize || "90";
     var audioBoost = options.audioBoost || "100";
     var videoResolution = options.videoResolution || "1280x720";
-
+    var xmlId = this.X_Plex_Device_Name;
+    if (options.frameRate.match(/^23/))
+       xmlId = xmlId + "_24fps";
 
     //var url = "/video/:/transcode/universal/start.mpd?";
     var url = "/video/:/transcode/universal/start.m3u8?";
@@ -921,12 +923,12 @@ PLEX.prototype.getHlsTranscodeUrl = function (key, options) {
     url += "&session=" + session;
 
     url += "&X-Plex-Client-Identifier=" + this.X_Plex_Client_Identifier;
-    url += "&X-Plex-Product=" + this.X_Plex_Product;
-    url += "&X-Plex-Device=" + this.X_Plex_Device;
-    url += "&X-Plex-Platform=" + this.X_Plex_Platform;
+    url += "&X-Plex-Product=" + xmlId;
+    url += "&X-Plex-Device=" + xmlId;
+    url += "&X-Plex-Platform=" + xmlId;
     url += "&X-Plex-Platform-Version=" + this.X_Plex_Platform_Version;
     url += "&X-Plex-Version=" + this.X_Plex_Version;
-    url += "&X-Plex-Device-Name=" + this.X_Plex_Device_Name;
+    url += "&X-Plex-Device-Name=" + xmlId;
 
     console.log("Path" + path +
         "\nSessionID:" + session +

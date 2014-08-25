@@ -234,7 +234,9 @@ Player.prototype.openMedia = function (key) {
 
         self.setVideoSize(self.media, self.aspectRatio, self.windowHeight, self.windowWidth);
 
-        self.url = self.plex.getHlsTranscodeUrl(self.key, self.getTranscodingOptions());
+        options = self.getTranscodingOptions();
+        options.frameRate = $(xml).find("Stream:first").attr("frameRate");
+        self.url = self.plex.getHlsTranscodeUrl(self.key, options);
         self.media.setAttribute('src', self.url);
         self.media.load();
         // self.media.play();
