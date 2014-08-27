@@ -221,28 +221,35 @@ Player.prototype.openMedia = function (key) {
     this.showLoader("Loading");
 
     this.plex.getMediaMetadata(this.key, function (xml) {
-
         self.cache = xml;
+        var container = $(xml).find("Media:first").attr("container");
+        var vcodec = $(xml).find("Media:first").attr("videoCodec");
+        var acodec = $(xml).find("Media:first").attr("audioCodec");
+        // TiVo compatible video gets non-transcoding url
+        if ((container == "mp4" || container == "mpegts") && vcodec == "h264" && (acodec == "aac" || acodec == "mp3"))
+            self.directUrl = self.plex.getServerUrl() + $(xml).find("Part:first").attr("key");
+        else
+            self.directUrl = null;
         self.mediaKey = $(xml).find("Video:first").attr("ratingKey");
         self.mediaUrl = $(xml).find("Part:first").attr("key");
         self.viewOffset = $(xml).find("Video:first").attr("viewOffset");
         self.duration = $(xml).find("Video:first").attr("duration");
         self.duration = Number(self.duration) / 1000;
         self.media.dur = self.duration;
-
         self.aspectRatio = $(xml).find("Media:first").attr("aspectRatio");
 
         self.setVideoSize(self.media, self.aspectRatio, self.windowHeight, self.windowWidth);
-
-        options = self.getTranscodingOptions();
-        options.frameRate = $(xml).find("Stream:first").attr("frameRate");
-        self.url = self.plex.getHlsTranscodeUrl(self.key, options);
+        
+        if (self.directUrl == null) {
+            var options = self.getTranscodingOptions();
+            options.frameRate = $(xml).find("Stream:first").attr("frameRate");
+            self.url = self.plex.getHlsTranscodeUrl(self.key, options);
+        } else
+            self.url = self.directUrl;
         self.media.setAttribute('src', self.url);
         self.media.load();
-        // self.media.play();
 
         console.log(self.url);
-        //	}
         self.hideLoader();
 
         if ($.querystring().autoplay == "true") {
@@ -842,22 +849,26 @@ Player.prototype.stop = function () {
 
 Player.prototype.seek = function (timeMS) {
     console.log("seeking to:" + timeMS);
-    this.media.pause();
-    this.stopTranscoding();
+    if (this.directUrl == null) {
+        // Transcoding url
+        this.media.pause();
+        this.stopTranscoding();
 
-   // Without this timeout the transcoder stop doesn't always work
-    setTimeout(function (player) {
-       var options = player.getTranscodingOptions();
-       options.offset = Math.round(timeMS / 1000);
-       var url = player.plex.getHlsTranscodeUrl(player.key, options);
+       // Without this timeout the transcoder stop doesn't always work
+        setTimeout(function (player) {
+           var options = player.getTranscodingOptions();
+           options.offset = Math.round(timeMS / 1000);
+           var url = player.plex.getHlsTranscodeUrl(player.key, options);
+           player.media.setAttribute('src', url);
 
-       player.media.setAttribute('src', url);
-
-       player.media.load();
-       player.media.play();
-       console.log("Seek URL:" + url);
-    }, 1000, this);
-
+           player.media.load();
+           player.media.play();
+           console.log("Seek URL:" + url);
+        }, 1000, this);
+    } else {
+        // Direct play url
+        this.media.currentTime = Math.round(timeMS/1000);
+    }
 };
 
 Player.prototype.enableSubtitles = function (subtitleId) {
