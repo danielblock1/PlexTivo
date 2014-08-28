@@ -201,7 +201,7 @@ Player.prototype.getTranscodingOptions = function () {
 
     var options = {};
     var bandwidth = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "bandwidthSelection");
-    if (bandwidth != "null") {
+    if (bandwidth !=null && bandwidth != "null") {
         var bwidthvars = bandwidthArray[Number(bandwidth)];
         options.videoResolution = bwidthvars[2];
         options.videoQuality = bwidthvars[3];
@@ -212,6 +212,7 @@ Player.prototype.getTranscodingOptions = function () {
     if (httpEnabled == "1") {
         options.protocol = "http";
     }
+    options.frameRate = this.frameRate;
     return options;
 };
 
@@ -237,12 +238,12 @@ Player.prototype.openMedia = function (key) {
         self.duration = Number(self.duration) / 1000;
         self.media.dur = self.duration;
         self.aspectRatio = $(xml).find("Media:first").attr("aspectRatio");
-
+        self.frameRate = $(xml).find("Stream:first").attr("frameRate");
         self.setVideoSize(self.media, self.aspectRatio, self.windowHeight, self.windowWidth);
         
         if (self.directUrl == null) {
             var options = self.getTranscodingOptions();
-            options.frameRate = $(xml).find("Stream:first").attr("frameRate");
+
             self.url = self.plex.getHlsTranscodeUrl(self.key, options);
         } else
             self.url = self.directUrl;
