@@ -20,6 +20,11 @@ function PLEX() {
     this.PLEX_OPTIONS_PREFIX = "plexOptions-";
     this.PLEX_WIDTH = "plexWidth";
     this.PLEX_HEIGHT = "plexHeight";
+    this.PLEX_USE_MYPLEX = "plexUseMyPlex";
+    this.PLEX_AUTHENTICATION_TOKEN = "plexAuthToken";
+    this.PLEX_MYPLEX_USERNAME = "plexMyPlexUsername";
+    this.PLEX_MYPLEX_PASSWORD = "plexMyPlexPass";;
+    this.PLEX_LOCAL_PORT = "plexLocalPort";
 
     this.X_Plex_Client_Identifier = localStorage.getItem(this.PLEX_SESSION_ID);
     this.X_Plex_Product = "Tivo";
@@ -35,6 +40,23 @@ function PLEX() {
 
 // Configuration & Settings
 
+PLEX.prototype.isMyPlexEnabled = function(){
+    var isMyPlexEnabled = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_USE_MYPLEX);
+
+    if(isMyPlexEnabled!=null && isMyPlexEnabled == "1"){
+        return true;
+    }
+    return false;
+};
+
+PLEX.prototype.setMyPlexEnabled = function(enable){
+    if(enable) {
+        localStorage.setItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_USE_MYPLEX, "1");
+    }else{
+        localStorage.setItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_USE_MYPLEX, "0");
+
+    }
+ };
 
 
 PLEX.prototype.getPlexHeight = function () {
@@ -45,7 +67,7 @@ PLEX.prototype.getPlexHeight = function () {
 
         this.setPlexHeight(height);
     }
-    console.log("Window Height is " + height);
+    //console.log("Window Height is " + height);
     return height;
 };
 
@@ -56,7 +78,7 @@ PLEX.prototype.getPlexWidth = function () {
         console.log("No Width Set, Setting Width to default: " + width)
         this.setPlexWidth(width);
     }
-    console.log("Window Width is " + width);
+   // console.log("Window Width is " + width);
     return width;
 };
 
@@ -69,16 +91,16 @@ PLEX.prototype.setPlexWidth = function (width) {
     localStorage.setItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_WIDTH, width);
 };
 
-PLEX.prototype.getAvailableBandwidths = function() {
+PLEX.prototype.getAvailableBandwidths = function () {
     var bandwidthArray = [
         [0, '480p 2.0Mbps' , '720x480', '60', '2000'],
         [1, '720p 3.0Mbps' , '1280x720', '75', '3000'],
         [2, '720p 4.0Mbps' , '1280x720', '100', '4000']//,
-       /* [3, '1080p 8.0Mbps' , '1920x1080', '60', '8000'],
-        [4, '1080p 10.0Mbps' , '1920x1080', '75', '10000'],
-        [5, '1080p 12.0Mbps' , '1920x1080', '90', '12000'],
-        [6, '1080p 20.0Mbps' , '1920x1080', '100', '20000'],
-        [7, '1080p 40.0Mbps' , '1920x1080', '100', '40000'];*/
+        /* [3, '1080p 8.0Mbps' , '1920x1080', '60', '8000'],
+         [4, '1080p 10.0Mbps' , '1920x1080', '75', '10000'],
+         [5, '1080p 12.0Mbps' , '1920x1080', '90', '12000'],
+         [6, '1080p 20.0Mbps' , '1920x1080', '100', '20000'],
+         [7, '1080p 40.0Mbps' , '1920x1080', '100', '40000'];*/
     ];
     return bandwidthArray;
 };
@@ -88,11 +110,19 @@ PLEX.prototype.setServerUrl = function (url) {
 };
 
 PLEX.prototype.getServerUrl = function () {
-    return localStorage.getItem(this.LG_PLEX_SERVER);
+     return localStorage.getItem(this.LG_PLEX_SERVER);
 };
 
 PLEX.prototype.getServerPort = function () {
     return localStorage.getItem(this.LG_PLEX_SERVER).substr(localStorage.getItem(this.LG_PLEX_SERVER).lastIndexOf(":") + 1);
+};
+
+PLEX.prototype.getLocalServerPort = function (){
+    if (this.isMyPlexEnabled()) {
+        return "32400";
+    } else {
+        return localStorage.getItem(this.LG_PLEX_SERVER).substr(localStorage.getItem(this.LG_PLEX_SERVER).lastIndexOf(":") + 1);
+    }
 };
 
 PLEX.prototype.removeServerUrl = function () {
@@ -104,7 +134,7 @@ PLEX.prototype.getLibraryServer = function (callback) {
 };
 
 PLEX.prototype.checkLibraryServerExists = function (callback, failCallback) {
-    $.ajax({url: this.getServerUrl(),
+    $.ajax({url: this.getServerUrl() + "?" +this.getAuthenticationToken(),
         success: callback,
         error: failCallback,
         timeout: 20000
@@ -139,11 +169,11 @@ PLEX.prototype.getMediaType = function (title, sectionType) {
 
 // Media library functions 
 PLEX.prototype.getSections = function (callback) {
-    $.get(this.getServerUrl() + "/library/sections", callback);
+    $.get(this.getServerUrl() + "/library/sections?"+ this.getAuthenticationToken(), callback);
 };
 
 PLEX.prototype.getSectionDetails = function (key, callback) {
-    $.get(this.getServerUrl() + "/library/sections/" + key, callback);
+    $.get(this.getServerUrl() + "/library/sections/" + key+ "?" +this.getAuthenticationToken(), callback);
 };
 
 PLEX.prototype.getSectionMedia = function (key, filter, filterKey, callback) {
@@ -156,39 +186,39 @@ PLEX.prototype.getSectionMedia = function (key, filter, filterKey, callback) {
             case "all":
                 filter = decodeURIComponent(filterKey);
                 if (filter.indexOf("?") > -1) {
-                    $.get(this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time, callback);
+                    $.get(this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time+ "&" +this.getAuthenticationToken(), callback);
                 } else {
-                    $.get(this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time, callback);
+                    $.get(this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time+ "&" + this.getAuthenticationToken(), callback);
                 }
                 break;
 
             case "search":
-                $.get(this.getServerUrl() + "/search?query=" + filterKey, callback);
+                $.get(this.getServerUrl() + "/search?query=" + filterKey+ "&" +this.getAuthenticationToken(), callback);
                 break;
 
             default:
-                $.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time, callback);
+                $.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time+ "&" +this.getAuthenticationToken(), callback);
                 break;
         }
     } else {
         if (key == "channels") {
             self.getChannels(key, callback);
         } else {
-            $.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time, callback);
+            $.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time+ "&" + this.getAuthenticationToken(), callback);
         }
     }
 };
 
 PLEX.prototype.getRecentlyAdded = function (key, callback) {
-    $.get(this.getServerUrl() + "/library/sections/" + key + "/recentlyAdded?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time, callback);
+    $.get(this.getServerUrl() + "/library/sections/" + key + "/recentlyAdded?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time+ "&" + this.getAuthenticationToken(), callback);
 };
 
 PLEX.prototype.getOnDeck = function (key, callback) {
-    $.get(this.getServerUrl() + "/library/onDeck?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time, callback);
+    $.get(this.getServerUrl() + "/library/onDeck?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time+"&" + this.getAuthenticationToken(), callback);
 };
 
 PLEX.prototype.getChannels = function (key, callback) {
-    $.get(this.getServerUrl() + "/channels/all", callback);
+    $.get(this.getServerUrl() + "/channels/all?"+ this.getAuthenticationToken(), callback);
 };
 
 //Helper function for main menu
@@ -210,51 +240,52 @@ PLEX.prototype.getMediaItems = function (section, key, callback) {
 
 PLEX.prototype.getMediaMetadata = function (key, callback) {
     if (key.indexOf("?") > -1) {
-        $.get(this.getServerUrl() + key + "&X-Plex-Access-Time=" + this.time, callback);
+        $.get(this.getServerUrl() + key + "&X-Plex-Access-Time=" + this.time+ "&" +this.getAuthenticationToken(), callback);
     } else {
-        $.get(this.getServerUrl() + key + "?X-Plex-Access-Time=" + this.time, callback);
+        $.get(this.getServerUrl() + key + "?X-Plex-Access-Time=" + this.time+ "&" +this.getAuthenticationToken(), callback);
     }
 };
 
 PLEX.prototype.reportProgress = function (key, state, time) {
     console.log("ReportProgress:" + state + " at time:" + time);
-    $.get(this.getServerUrl() + "/:/progress?key=" + key + "&identifier=com.plexapp.plugins.library&time=" + Math.round(time * 1000) + "&state=" + state, null);
+    $.get(this.getServerUrl() + "/:/progress?key=" + key + "&identifier=com.plexapp.plugins.library&time=" + Math.round(time * 1000) + "&state=" + state+ "&" +this.getAuthenticationToken(), null);
 };
 
 PLEX.prototype.setWatched = function (key, callback) {
-    $.get(this.getServerUrl() + "/:/scrobble?key=" + key + "&identifier=com.plexapp.plugins.library", callback);
+    $.get(this.getServerUrl() + "/:/scrobble?key=" + key + "&identifier=com.plexapp.plugins.library"+ "&" +this.getAuthenticationToken(), callback);
 };
 
 PLEX.prototype.setUnwatched = function (key, callback) {
-    $.get(this.getServerUrl() + "/:/unscrobble?key=" + key + "&identifier=com.plexapp.plugins.library", callback);
+    $.get(this.getServerUrl() + "/:/unscrobble?key=" + key + "&identifier=com.plexapp.plugins.library"+ "&" +this.getAuthenticationToken(), callback);
 };
 
 PLEX.prototype.setAudioStream = function (partKey, streamKey) {
 
     $.ajax({
         type: "PUT",
-        url: this.getServerUrl() + "/library/parts/" + partKey + "?audioStreamID=" + streamKey
+        url: this.getServerUrl() + "/library/parts/" + partKey + "?audioStreamID=" + streamKey+ "&" +this.getAuthenticationToken()
     });
 };
 
 PLEX.prototype.setSubtitleStream = function (partKey, streamKey) {
-    console.log(this.getServerUrl() + "/library/parts/" + partKey + "?subtitleStreamID=" + streamKey);
+    //console.log(this.getServerUrl() + "/library/parts/" + partKey + "?subtitleStreamID=" + streamKey+ "&" + this.getAuthenticationToken());
     $.ajax({
         type: "PUT",
-        url: this.getServerUrl() + "/library/parts/" + partKey + "?subtitleStreamID=" + streamKey
+        url: this.getServerUrl() + "/library/parts/" + partKey + "?subtitleStreamID=" + streamKey + "&" +this.getAuthenticationToken()
     });
 };
 
 PLEX.prototype.getTranscodedPath = function (path, width, height, remote) {
     if (remote) {
-        return this.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(path) + "&width=" + width + "&height=" + height;
+        return this.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(path) + "&width=" + width + "&height=" + height +"&" + this.getAuthenticationToken();
     } else {
-        return this.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent("http://localhost:" + this.getServerPort() + path) + "&width=" + width + "&height=" + height;
+        return this.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent("http://localhost:" + this.getLocalServerPort() + path) + "&width=" + width + "&height=" + height + "&" +this.getAuthenticationToken();
     }
 };
 
 PLEX.prototype.getTranscodedMediaFlagPath = function (flag, value, width, height) {
-    return this.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent("http://localhost:" + this.getServerPort() + "/system/bundle/media/flags/" + flag + "/" + value + "?t=" + new Date().getTime()) + "&width=" + width + "&height=" + height;
+    //console.log("thumb url:" + this.getServerUrl() +"/photo/:/transcode?url=" + encodeURIComponent("http://localhost:" + this.getLocalServerPort() + "/system/bundle/media/flags/" + flag + "/" + value + "?t=" + new Date().getTime()) + "&width=" + width + "&height=" + height + "&" +this.getAuthenticationToken());
+    return this.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent("http://localhost:" + this.getLocalServerPort() + "/system/bundle/media/flags/" + flag + "/" + value + "?t=" + new Date().getTime()) + "&width=" + width + "&height=" + height + "&" +this.getAuthenticationToken();
 };
 
 
@@ -543,7 +574,7 @@ PLEX.prototype.getMediaPreviewHtml = function (xml) {
     var mediaType = mediaItem.attr("type");
     var audioStream = $(xml).find("Media:first Stream[streamType='2'][selected='1']").length > 0 ? $(xml).find("Media:first Stream[streamType='2'][selected='1']") : $(xml).find("Media:first Stream[streamType='2']:first");
     var subtitleStream = $(xml).find("Media:first Stream[streamType='3'][selected='1']").length > 0 ? $(xml).find("Media:first Stream[streamType='3'][selected='1']") : $(xml).find("Media:first Stream[streamType='3']");
-    console.log("test:" + $(subtitleStream).length);
+
     var html = "<div class=\"" + mediaType + "\">";
 
     switch (mediaType) {
@@ -900,12 +931,12 @@ PLEX.prototype.getHlsTranscodeUrl = function (key, options) {
     var videoResolution = options.videoResolution || "1280x720";
     var xmlId = this.X_Plex_Device_Name;
     if (options.frameRate.match(/^23/))
-       xmlId = xmlId + "_24fps";
+        xmlId = xmlId + "_24fps";
 
     //var url = "/video/:/transcode/universal/start.mpd?";
     var url = "/video/:/transcode/universal/start.m3u8?";
     if (protocol == "http")
-       url = "/video/:/transcode/universal/start.ts?";
+        url = "/video/:/transcode/universal/start.ts?";
     url += "path=" + encodeURIComponent(path);
     url += "&mediaIndex=" + mediaIndex;
     url += "&partIndex=" + partIndex;
@@ -944,13 +975,13 @@ PLEX.prototype.getHlsTranscodeUrl = function (key, options) {
         "\nAudioBoost:" + audioBoost +
         "\nVideoResolution:" + videoResolution);
 
-    return this.getServerUrl() + url;
+    return this.getServerUrl() + url + "&" +this.getAuthenticationToken();
 };
 
 PLEX.prototype.getTimeline = function (key, state, time, duration) {
     $.ajax({
         type: "GET",
-        url: this.getServerUrl() + "/:/timeline?time=" + time + "&duration=" + duration + "&state=" + state + "&key=%2Flibrary%2Fmetadata%2F" + key + "&ratingKey=" + key,
+        url: this.getServerUrl() + "/:/timeline?time=" + time + "&duration=" + duration + "&state=" + state + "&key=%2Flibrary%2Fmetadata%2F" + key + "&ratingKey=" + key + "&" +this.getAuthenticationToken(),
         headers: {"X-Plex-Client-Identifier": this.X_Plex_Client_Identifier,
             "X-Plex-Product": this.X_Plex_Product,
             "X-Plex-Device": this.X_Plex_Device,
@@ -965,7 +996,7 @@ PLEX.prototype.getTimeline = function (key, state, time, duration) {
 PLEX.prototype.ping = function () {
     $.ajax({
         type: "GET",
-        url: this.getServerUrl() + "/video/:/transcode/universal/ping?session=" + this.X_Plex_Client_Identifier,
+        url: this.getServerUrl() + "/video/:/transcode/universal/ping?session=" + this.X_Plex_Client_Identifier + "&" +this.getAuthenticationToken(),
         headers: {"X-Plex-Client-Identifier": this.X_Plex_Client_Identifier,
             "X-Plex-Product": this.X_Plex_Product,
             "X-Plex-Device": this.X_Plex_Device,
@@ -975,6 +1006,162 @@ PLEX.prototype.ping = function () {
             "X-Plex-Device-Name": this.X_Plex_Device_Name
         }
     });
+};
+
+PLEX.prototype.resetAuthenticationToken = function(){
+    localStorage.removeItem(this.PLEX_AUTHENTICATION_TOKEN);
+};
+
+PLEX.prototype.getAuthenticationToken = function(){
+
+    //check whether myplex is enabled
+    if(!this.isMyPlexEnabled()){
+        return "";
+    }
+
+    //check whether we already got the authtoken and return it if we did
+    var authToken = localStorage.getItem(this.PLEX_AUTHENTICATION_TOKEN);
+    if(authToken !=null && authToken !="null"){
+        return "X-Plex-Token=" +authToken;
+    }
+
+    var username = this.getUsername();
+    var password = this.getPassword();
+
+    //username and password aren't stored properly don't use auth token
+    if(username == null || password == null){
+        console.log ("not getting auth token");
+        return "";
+    }
+
+    var token = this.login(username, password);
+    if(token == null || token =="" || token =="null"){
+        return "";
+    }
+    localStorage.setItem(this.PLEX_AUTHENTICATION_TOKEN, token);
+    return "&X-Plex-Token="  + token;
+};
+
+PLEX.prototype.isLoggedIn = function(){
+    var authToken = localStorage.getItem(this.PLEX_AUTHENTICATION_TOKEN);
+    if(authToken !=null && authToken !="null"){
+        return true;
+    }
+    return false;
+};
+
+PLEX.prototype.getUsername=function(){
+    var username = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_MYPLEX_USERNAME);
+    if(username != null && username !="null" && username !="" ){
+        return username;
+    }else{
+        return null;
+    }
+};
+
+
+PLEX.prototype.getPassword=function(){
+    var password = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_MYPLEX_PASSWORD);
+    if(password != null && password !="null" && password !="" ){
+        return password;
+    }else{
+        return null;
+    }
+};
+
+PLEX.prototype.setUsername = function(username){
+    if(username !=null && username !="null" && username !=""){
+        localStorage.setItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_MYPLEX_USERNAME, username);
+
+    }
+}
+
+PLEX.prototype.setPassword=function(password){
+
+    if(password != null && password !="null" && password !="" ){
+
+        localStorage.setItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_MYPLEX_PASSWORD, password);
+    }
+};
+
+PLEX.prototype.getMyPlexServers = function(){
+    var authToken = localStorage.getItem(this.PLEX_AUTHENTICATION_TOKEN);
+    var url = 'https://my.plexapp.com/pms/servers.xml?auth_token=' + authToken;
+
+
+    var xhr = new XMLHttpRequest();
+    var tokenNode = null;
+
+    xhr.open('GET', url, false);
+
+    xhr.send(null);
+
+    if (xhr.readyState === 4) {
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+              //console.log(xhr.responseText);
+              var server = $(xhr.responseText).find("Server:first");
+              //console.log("url:" + server.attr("address") + " port:" + server.attr("port"));
+              return retVal ={
+                url: server.attr("address"),
+                port: server.attr("port"),
+                name: server.attr("name")
+              };
+
+
+
+        }
+    }
+    return null;
+};
+
+
+PLEX.prototype.login = function (username, pass) {
+    //console.log(username +":" + pass);
+    if(username == null || pass ==null){
+        console.log("not logging in");
+        return null;
+    }
+    //console.log("User:" + username +" Pass:" + pass);
+    var token = username + ':' + pass;
+    var encoded = btoa(token);
+    var auth = 'Basic ' + encoded;
+    var url = 'https://my.plexapp.com/users/sign_in.xml';
+
+    var xhr = new XMLHttpRequest();
+    var tokenNode = null;
+
+    xhr.open('POST', url, false);
+    xhr.setRequestHeader('Authorization', auth);
+    xhr.setRequestHeader('X-Plex-Client-Identifier', this.X_Plex_Client_Identifier);
+    xhr.setRequestHeader('X-Plex-Platform', this.X_Plex_Platform);
+    //xhr.setRequestHeader('X-Plex-Platform-Version', '');
+    xhr.setRequestHeader('X-Plex-Provides', 'player');
+    xhr.setRequestHeader('X-Plex-Product', this.X_Plex_Product);
+    //xhr.setRequestHeader('X-Plex-Version', '');
+    //xhr.setRequestHeader('X-Plex-Device', ''); // TODO: example Beoplay V1
+    xhr.send(null);
+
+    if (xhr.readyState === 4) {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            tokenNode = xhr.responseXML.getElementsByTagName('authentication-token')[0];
+            //console.log("Token:" + tokenNode.childNodes[0].nodeValue);
+        }else{
+            if(xhr.status == 401){
+                throw "Invalid Username or Password";
+            }else{
+                throw "Error: HTTP status code: " +xhr.status;
+            }
+
+        };
+    }
+    if(tokenNode == null){
+        return null;
+    }
+    if(tokenNode.childNodes[0].nodeValue !=null) {
+        localStorage.setItem(this.PLEX_AUTHENTICATION_TOKEN, tokenNode.childNodes[0].nodeValue);
+    }
+    return tokenNode.childNodes[0].nodeValue;
 };
 
 PLEX.prototype.getSessionID = function () {

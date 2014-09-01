@@ -14,9 +14,11 @@
     <script src="system/script/jquery.querystring.js"></script>
     <script src="system/script/jquery.caret.js"></script>
     <script src="system/script/jquery.tooltips.min.js"></script>
-    <script src="system/script/plex.js?v=3"></script>
-    <script src="system/script/index.js?v=17"></script>
+    <script src="system/script/plex.js?v=190"></script>
+    <script src="system/script/index.js?v=350"></script>
     <script src="system/script/language.js"></script>
+
+
 
     <script>
         $(document).ready(function () {
@@ -95,9 +97,9 @@
 
                 <p>Build 0.7.0.6 - 2014/07/01</p>
 
-                <p data-language="dialogAboutCreated">Created by Simon J. Hogan</p>
+                <p data-language="dialogAboutCreated">Created by ntlord and moyekj. Special thanks to Simon J. Hogan</p>
 
-                <p data-language="dialogAboutCopyright">Sith'ari Consulting Australia &copy; 2014</p>
+                <p data-language="dialogAboutCopyright">&copy; 2014</p>
 
                 <p>https://plex.tv | glyphicons.com | www.sithari.com.au</p>
             </div>
@@ -114,14 +116,44 @@
                 <p data-language="dialogHelpPMS">PLEX Media Server can be downloaded from https://plex.tv</p>
             </div>
         </div>
+        <div id="myplexdialog" class="dialog" style="display: none;">
+            <div class="header"><span data-language="myplexSettings">My Plex Login</span></div>
+
+            <div class="details">
+                <div style="margin-top: 70px" class="details">
+                    <a data-key-left="#navigator #settings a.selected" data-key-down="#username" id="myPlexEnabled" href="">
+                        <i class="glyphicon check"></i>
+                        <span data-language="myPlexEnabled">Use My Plex</span>
+                    </a>
+                </div>
+
+                <input style="margin-top: 30px;border: 3px solid #FF9900;border-radius: 10px" data-key-down="#pass" data-key-up="#myPlexEnabled" name="username" id="username" type="text" value=""
+                                        required="required" placeholder="Username"
+                                        autocomplete="off"/>
+
+                <input style="margin-top: 30px;border: 3px solid #FF9900;border-radius: 10px" data-key-up="#username" data-key-down="#signin" name="pass" id="pass" type="password" value=""
+                       required="required" placeholder="Password"
+                       autocomplete="off"/>
+
+                <div class="buttons">
+                    <button style="margin-top: 10px;" data-key-up="#pass"  data-key-right="#clear" id="signin">Sign In
+                    </button>
+                    <button data-key-left="#signin" id="clear">Clear
+                    </button>
+                </div>
+
+
+            </div>
+            <div style="margin-top: 20px" id="myplexMessage" class="details"></div>
+        </div>
         <div id="config" class="dialog" style="display: none;">
             <div class="header"><span data-language="dialogSettings">Settings</span></div>
-            <div class="content">
+            <div id="serverSelection" class="content">
                 <form onsubmit="return false;">
-                    <p data-language="dialogSettingsPrompt">Enter you PLEX Media Server (PMS) ip address and port
+                    <p id="prompt" data-language="dialogSettingsPrompt">Enter you PLEX Media Server (PMS) ip address and port
                         below</p>
 
-                    <div class="details"><input data-key-down="#save" name="pms" id="pms" type="text" value=""
+                    <div class="details"><input data-key-down="#MyPlex" name="pms" id="pms" type="text" value=""
                                                 required="required" placeholder="e.g. 192.168.0.3:32400"
                                                 autocomplete="off"/></div>
                     <div class="actions">
@@ -140,13 +172,13 @@
                                 </td>
                                 <td>
                                     <button data-key-up="#pms" data-key-down="#k6" data-key-left="#k8"
-                                            data-key-right="#scan" class="keypad" id="k9">9
+                                            data-key-right="#MyPlex" class="keypad" id="k9">9
                                     </button>
                                 </td>
                                 <td>
-                                    <button data-key-up="#pms" data-key-down="#save" data-key-left="#k9" id="scan"><i
-                                            class="glyphicon magic"></i> <span
-                                            data-language="dialogSettingsScan">Scan</span></button>
+                                    <button data-key-up="#pms" data-key-down="#save" data-key-left="#k9" id="MyPlex" href=""><i
+                                            class="glyphicon unchecked"></i> <span
+                                            data-language="dialogMyPlex">Use My Plex</span></button>
                                 </td>
                             <tr>
                                 <td>
@@ -166,7 +198,7 @@
                                     </button>
                                 </td>
                                 <td>
-                                    <button data-key-up="#scan" data-key-down="#kb" data-key-left="#k6" id="save"><i
+                                    <button data-key-up="#MyPlex" data-key-down="#kb" data-key-left="#k6" id="save"><i
                                             class="glyphicon server-plus"></i> <span data-language="dialogSettingsSave">Save</span>
                                     </button>
                                 </td>

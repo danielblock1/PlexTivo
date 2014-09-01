@@ -50,6 +50,17 @@ body.xlarge {
     margin-bottom: 5px;
 }
 
+#myplexInput {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    left: 50%;
+    top: 50%;
+    margin-left: -50px;
+    margin-top: -50px;
+}
+
+
 #application {
     position: absolute;
     top: 0px;
@@ -258,7 +269,7 @@ body.xlarge {
     height: 210px;
     -webkit-box-sizing: border-box;
     padding: 2px;
-/ / width : 860 px;
+/* width : 860 px;*/
 }
 
 .media-quick-menu .content::-webkit-scrollbar {

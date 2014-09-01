@@ -20,6 +20,9 @@ function Menu() {
     this.PLEX_SERVER_LIST = "plexServerList";
     this.PLEX_CURRENT_PREFIX = "plexHomeSelected-";
     this.PLEX_OPTIONS_PREFIX = "plexOptions-";
+    this.PLEX_USE_MYPLEX = "plexUseMyPlex";
+    this.PLEX_MYPLEX_USERNAME = "plexMyPlexUsername";
+    this.PLEX_MYPLEX_PASSWORD = "plexMyPlexPass";
 
     this.plex = new PLEX();
     this.cache = "";
@@ -37,6 +40,8 @@ function Menu() {
     if (!localStorage.getItem(this.PLEX_SESSION_ID) || localStorage.getItem(this.PLEX_SESSION_ID) == "") {
         localStorage.setItem(this.PLEX_SESSION_ID, this.plex.getSessionID());
     }
+
+
 
     if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "largeText") == "1") {
         $("body").addClass("xlarge");
@@ -156,6 +161,30 @@ Menu.prototype.initialise = function (focus) {
 
     var self = this;
 
+
+    if(this.plex.isMyPlexEnabled()) {
+
+        this.plex.resetAuthenticationToken();
+
+        try {
+            this.plex.login(this.plex.getUsername(), this.plex.getPassword());
+        }catch(err){
+            console.log("error:" + err);
+            localStorage.removeItem(this.PLEX_OPTIONS_PREFIX+this.PLEX_MYPLEX_USERNAME);
+            localStorage.removeItem(this.PLEX_OPTIONS_PREFIX+this.PLEX_MYPLEX_PASSWORD);
+            //localStorage.removeItem(this.PL)
+            location.reload();
+        }
+        var server = this.plex.getMyPlexServers();
+
+        if(server != null){
+            this.plex.setServerUrl("http://" + server.url +":" + server.port);
+
+        }
+    }
+
+
+
     var pms = this.plex.getServerUrl();
 
 
@@ -266,6 +295,7 @@ Menu.prototype.initialise = function (focus) {
 
                     // Right Arrow - Quick Select
                     if (event.which == 39) {
+
                         event.preventDefault();
                         $.event.trigger({
                             type: "navigationQuickSelect",
@@ -995,16 +1025,196 @@ Menu.prototype.toggleMenu = function () {
     }
 };
 
+Menu.prototype.myPlexDialog= function (init) {
+    var self = this;
+
+    $("#config").fadeOut(1000);
+    //$("#myplexdialog").fadeIn(1000);
+
+    $("#myplexdialog").fadeIn(400, function () {
+        if (init) {
+            $("#signin").focus();
+        }
+    });
+    $("#myplexdialog a#myPlexEnabled").click(function(event){
+        event.preventDefault();
+
+
+        //remove my plex URL
+        self.plex.removeServerUrl();
+
+        //turn off my plex and log out
+        self.plex.setMyPlexEnabled(false);
+        self.plex.resetAuthenticationToken();
+        //remote myplex dialog
+        $("#myplexdialog").fadeOut(1000);
+
+        //reset the attributes back since we've logged out of myplex
+        $("#signin").text("Sign In");
+        $("#username").removeAttr("readonly");
+        $("#pass").removeAttr("readonly");
+        $("#clear").removeAttr("disabled");
+        $("#clear").attr("style", "color: white;");
+
+        //switch to local
+        self.settingsDialog(true);
+
+
+    });
+    var username = self.plex.getUsername(); //get username from storage
+    var password = self.plex.getPassword(); //get pass from storage
+
+    //as long as username and password retrieved for storage are good, set the text boxes
+    if(username != null && password != null){
+        $("#username").val(username);
+        $("#pass").val(password);
+    }
+
+    //if we are already logged in, set the gui field correctly
+    if(self.plex.isLoggedIn()){
+
+        $("#username").attr("readonly", "readonly");
+        $("#pass").attr("readonly", "readonly");
+        $("#clear").attr("disabled", "disabled");
+        $("#clear").attr("style", "color: grey;");
+        $("#signin").text("Sign Out");
+    }
+
+    $("#clear").unbind("click").click(function(event){ //we unbind before bind, because of the switching back and forth
+        $("#username").val("");                        //between my plex and the local server selection screen
+        $("#pass").val("");
+        localStorage.removeItem(self.PLEX_OPTIONS_PREFIX + self.PLEX_MYPLEX_USERNAME);
+        localStorage.removeItem(self.PLEX_OPTIONS_PREFIX + self.PLEX_MYPLEX_PASSWORD);
+    });
+
+    $("#signin").unbind("click").click(function(event){
+
+        event.stopPropagation();
+        event.preventDefault();
+
+        //if we are logged in, "sign out"
+        if(self.plex.isLoggedIn()){
+            self.plex.resetAuthenticationToken(); //clear out auth token
+            $("#signin").text("Sign In");
+            $("#username").removeAttr("readonly");
+            $("#pass").removeAttr("readonly");
+            $("#clear").removeAttr("disabled");
+            $("#clear").attr("style", "color: white;"); //enable clear button
+
+        }else{ //we are logged out, so sign in
+            var uname = $("#username").val(); //get username from txt box
+            var pass = $("#pass").val(); //get pass from txt box
+
+            if(uname != null && uname !="" && pass !=null && pass!="") { //only login if the username and password at least seem correct
+                $("#pass").attr("readonly", "readonly");
+                console.log("Logging in:" + uname);
+                try {
+                    var authToken = self.plex.login(uname, pass); //login
+                } catch (err) {
+                    console.log(err);
+                    $("#myplexMessage").show();
+                    $("#myplexMessage").html(err);
+                    $("#myplexMessage").fadeOut(5000);
+                    return;
+                }
+                self.plex.setUsername(uname); //set the username in storage
+                self.plex.setPassword(pass); //set the password in storage
+
+                if (authToken != null) { //if we have an auth token, login was successful
+                    $("#username").attr("readonly", "readonly");
+                    $("#pass").attr("readonly", "readonly");
+                    $("#clear").attr("disabled", "disabled");
+                    $("#clear").attr("style", "color: grey;");
+                    $("#signin").text("Sign Out");
+
+                    location.reload();
+                }
+
+            }else{
+                $("#myplexMessage").show();
+                $("#myplexMessage").html("Please Enter a Username and Password");
+                $("#myplexMessage").fadeOut(5000);
+            }
+        }
+    });
+    $("#myplexdialog input, #myplexdialog button, #myplexdialog a").unbind("keydown").keydown(function (event) {
+
+        // Up Arrow
+        if (event.which == 38) {
+            if ($(this).data("keyUp")) {
+                if($($(this).data("keyUp")).attr("readonly") != null){
+                    $("#myPlexEnabled").focus();
+                }else {
+                    $($(this).data("keyUp")).focus();
+                }
+
+                event.preventDefault();
+            }
+        }
+
+        // Down Arrow
+        if (event.which == 40) {
+
+            if ($(this).data("keyDown")) {
+                if($($(this).data("keyDown")).attr("readonly") != null){
+                    $("#signin").focus();
+                }else {
+                    $($(this).data("keyDown")).focus();
+                }
+                event.preventDefault();
+            }
+        }
+
+        // Left Arrow
+        if (event.which == 37) {
+            if ($(this).data("keyLeft")) {
+                $($(this).data("keyLeft")).focus();
+                event.preventDefault();
+            }
+        }
+
+        // Right Arrow
+        if (event.which == 39) {
+            if ($(this).data("keyRight")) {
+                if($($(this).data("keyRight")).attr("disabled") == null) {
+                    $($(this).data("keyRight")).focus();
+                }
+                event.preventDefault();
+            }
+        }
+
+        //Back
+        if (event.which == 461 || event.which == 27) {
+            $("#navigator a.selected").focus();
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+
+    });
+    if (init) {
+        //this.toggleMenu();
+        //$("#navigator #settings li a[data-title='Settings'").addClass("selected");
+        $("#signin").focus();
+    }
+};
+
 Menu.prototype.settingsDialog = function (init) {
     var self = this;
     //var device = document.getElementById("device");
     //var ip = device.net_ipAddress;
+
+    if(self.plex.isMyPlexEnabled()){
+        self.myPlexDialog(true);
+        return;
+    }
+
     var servers = new Array();
 
     $("#config").fadeIn(400, function () {
-        if (init) {
-            $("#scan").focus();
-        }
+        //if (init) {
+            $("#MyPlex").focus();
+        //}
     });
 
     $("#settingsMessage").html("");
@@ -1015,9 +1225,9 @@ Menu.prototype.settingsDialog = function (init) {
     }
 
     $("#save").off();
-    $("#scan").off();
+    //$("#scan").off();
 
-    $("#save").click(function () {
+    $("#save").unbind("click").click(function (event) {
         event.preventDefault();
         var pms = $("#pms").val();
 
@@ -1036,7 +1246,13 @@ Menu.prototype.settingsDialog = function (init) {
         location.reload();
     });
 
-    $("#scan").click(function () {
+    $("#MyPlex").unbind("click").click(function(event){
+        event.preventDefault();
+        self.plex.setMyPlexEnabled(true);
+        self.myPlexDialog(true);
+    });
+
+    /*$("#scan").click(function () {
         event.preventDefault();
         self.scanErrorCount = 0;
         self.scanFoundCount = 0;
@@ -1070,9 +1286,9 @@ Menu.prototype.settingsDialog = function (init) {
             }
             self.hideLoader();
         });
-    });
+    });*/
 
-    $("#config .keypad").click(function (event) {
+    $("#config .keypad").unbind("click").click(function (event) {
         var key = $(this).text();
         var pms = $("#pms").val();
         var caret = $("#pms").caret();
@@ -1104,7 +1320,7 @@ Menu.prototype.settingsDialog = function (init) {
         event.preventDefault();
     });
 
-    $("#config input, #config button").keydown(function (event) {
+    $("#config input, #config button").unbind("keydown").keydown(function (event) {
 
         // Up Arrow
         if (event.which == 38) {
@@ -1116,7 +1332,7 @@ Menu.prototype.settingsDialog = function (init) {
 
         // Down Arrow
         if (event.which == 40) {
-            if ($(this).data("keyDown")) {
+           if ($(this).data("keyDown")) {
                 $($(this).data("keyDown")).focus();
                 event.preventDefault();
             }
@@ -1126,7 +1342,7 @@ Menu.prototype.settingsDialog = function (init) {
         if (event.which == 37) {
             if ($(this).data("keyLeft")) {
                 $($(this).data("keyLeft")).focus();
-                //event.preventDefault();
+                event.preventDefault();
             }
         }
 
@@ -1134,7 +1350,7 @@ Menu.prototype.settingsDialog = function (init) {
         if (event.which == 39) {
             if ($(this).data("keyRight")) {
                 $($(this).data("keyRight")).focus();
-                //event.preventDefault();
+                event.preventDefault();
             }
         }
 
@@ -1149,7 +1365,7 @@ Menu.prototype.settingsDialog = function (init) {
     if (init) {
         //this.toggleMenu();
         //$("#navigator #settings li a[data-title='Settings'").addClass("selected");
-        $("#scan").focus();
+        $("#MyPlex").focus();
     }
 };
 
