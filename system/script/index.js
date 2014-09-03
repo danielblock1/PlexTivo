@@ -1302,7 +1302,7 @@ Menu.prototype.settingsDialog = function (init) {
                 if (caret > 0) {
                     var chars = $("#pms").val().split("");
                     chars.splice(caret - 1, 1);
-                    $("#pms").val(chars.join(""));
+                    $("#pms").val(chars.join("").trim());
                     $("#pms").caret(caret - 1);
                     $("#kb").focus();
                 }
@@ -1311,7 +1311,7 @@ Menu.prototype.settingsDialog = function (init) {
             default:
                 var chars = $("#pms").val().split("");
                 chars.splice(caret, 0, key);
-                $("#pms").val(chars.join(""));
+                $("#pms").val(chars.join("").trim());
                 $("#pms").caret(caret + 1);
                 $(this).focus();
                 //$("#pms").val(pms + key);
