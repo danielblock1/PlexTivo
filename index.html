@@ -14,10 +14,9 @@
     <script src="system/script/jquery.querystring.js"></script>
     <script src="system/script/jquery.caret.js"></script>
     <script src="system/script/jquery.tooltips.min.js"></script>
-    <script src="system/script/plex.js?v=190"></script>
-    <script src="system/script/index.js?v=350"></script>
+    <script src="system/script/plex.js?v=192"></script>
+    <script src="system/script/index.js?v=352"></script>
     <script src="system/script/language.js"></script>
-
 
 
     <script>
@@ -37,322 +36,325 @@
 <body>
 <div id="applicationWallpaper"></div>
 <div id="application">
-    <div id="navigator">
-        <div id="clock"></div>
-        <div class="flipper">
-            <div id="sections" class="menu vertical">
-                <ul></ul>
-            </div>
-            <div id="settings" class="menu vertical">
-                <ul>
-                    <li><a data-key-index="1" data-title="About" data-key="about" data-section-type="about"
-                           href=""><span data-language="sectionAbout">About</span></a></li>
-                    <li><a data-key-index="2" data-title="Help" data-key="help" data-section-type="help"
-                           data-language="sectionHelp" href=""><span data-language="sectionHelp">Help</span></a></li>
-                    <li><a data-key-index="3" data-title="Settings" data-key="settings" data-section-type="settings"
-                           href=""><span data-language="sectionSettings">Settings</span></a></li>
-                    <li><a data-key-index="4" data-title="Options" data-key="options" data-section-type="options"
-                           href=""><span data-language="sectionOptions">Options</span></a></li>
-                    <li><a data-key-index="5" data-title="Quit" data-key="quit" data-section-type="quit" href=""
-                           class="selected"><span data-language="sectionQuit">Quit</span></a></li>
-                </ul>
-            </div>
+<div id="navigator">
+    <div id="clock"></div>
+    <div class="flipper">
+        <div id="sections" class="menu vertical">
+            <ul></ul>
         </div>
-        <div id="navigatorSwitch" class="action"><i class="glyphicon message-forward"></i></div>
-    </div>
-    <div id="media">
-        <div id="server">
-            <div id="serverName"></div>
-            <div id="serverSelect" style="display: none;"></div>
-        </div>
-        <div id="recentlyAdded" class="media-quick-menu" style="display: none;">
-            <div class="content">
-                <ul></ul>
-            </div>
-            <div class="name"><span data-language="menuRecentlyAdded">Recently Added</span></div>
-        </div>
-        <div id="search" class="dialog" style="display: none;">
-            <div class="header"><span data-language="dialogSearch">Search</span></div>
-            <div class="content">
-                <form id="searchForm" action="media.html" method="get">
-                    <p data-language="dialogSearchPrompt">Enter you query in the field below and press find to search
-                        ...</p>
-
-                    <div class="details"><input data-key-down="#find" name="query" id="query" type="text" value=""
-                                                required="required" placeholder="e.g. metallica"/></div>
-                    <div class="actions">
-                        <button data-key-up="#query" data-key-left="#navigator #sections a.selected" id="find"
-                                data-language="dialogFindButton">Find
-                        </button>
-                    </div>
-                    <input type="hidden" name="action" value="search"/>
-                </form>
-            </div>
-        </div>
-        <div id="about" class="dialog" style="display: none;">
-            <div class="header"><span data-language="dialogAbout">About</span></div>
-            <div class="content">
-
-                <h3><img src="system/images/plex.png"/></h3>
-
-                <p>Build 0.7.0.6 - 2014/07/01</p>
-
-                <p data-language="dialogAboutCreated">Created by ntlord and moyekj. Special thanks to Simon J. Hogan</p>
-
-                <p data-language="dialogAboutCopyright">&copy; 2014</p>
-
-                <p>https://plex.tv | glyphicons.com | www.sithari.com.au</p>
-            </div>
-        </div>
-        <div id="help" class="dialog" style="display: none;">
-            <div class="header"><span data-language="dialogHelp">Help</span></div>
-            <div class="content">
-                <p data-language="dialogHelpInfo">Help documentation can be found at http://plex.sithari.com.au</p>
-                <h4 data-language="dialogNotice">Notice</h4>
-
-                <p data-language="dialogRequires">This application requires access to PLEX Media Server in order to
-                    function.</p>
-
-                <p data-language="dialogHelpPMS">PLEX Media Server can be downloaded from https://plex.tv</p>
-            </div>
-        </div>
-        <div id="myplexdialog" class="dialog" style="display: none;">
-            <div class="header"><span data-language="myplexSettings">My Plex Login</span></div>
-
-            <div class="details">
-                <div style="margin-top: 70px" class="details">
-                    <a data-key-left="#navigator #settings a.selected" data-key-down="#username" id="myPlexEnabled" href="">
-                        <i class="glyphicon check"></i>
-                        <span data-language="myPlexEnabled">Use My Plex</span>
-                    </a>
-                </div>
-
-                <input style="margin-top: 30px;border: 3px solid #FF9900;border-radius: 10px" data-key-down="#pass" data-key-up="#myPlexEnabled" name="username" id="username" type="text" value=""
-                                        required="required" placeholder="Username"
-                                        autocomplete="off"/>
-
-                <input style="margin-top: 30px;border: 3px solid #FF9900;border-radius: 10px" data-key-up="#username" data-key-down="#signin" name="pass" id="pass" type="password" value=""
-                       required="required" placeholder="Password"
-                       autocomplete="off"/>
-
-                <div class="buttons">
-                    <button style="margin-top: 10px;" data-key-up="#pass"  data-key-right="#clear" id="signin">Sign In
-                    </button>
-                    <button data-key-left="#signin" id="clear">Clear
-                    </button>
-                </div>
-
-
-            </div>
-            <div style="margin-top: 20px" id="myplexMessage" class="details"></div>
-        </div>
-        <div id="config" class="dialog" style="display: none;">
-            <div class="header"><span data-language="dialogSettings">Settings</span></div>
-            <div id="serverSelection" class="content">
-                <form onsubmit="return false;">
-                    <p id="prompt" data-language="dialogSettingsPrompt">Enter you PLEX Media Server (PMS) ip address and port
-                        below</p>
-
-                    <div class="details"><input data-key-down="#MyPlex" name="pms" id="pms" type="text" value=""
-                                                required="required" placeholder="e.g. 192.168.0.3:32400"
-                                                autocomplete="off"/></div>
-                    <div class="actions">
-                        <table>
-                            <tr>
-                                <td>
-                                    <button data-key-up="#pms" data-key-down="#k4"
-                                            data-key-left="#navigator #settings a.selected" data-key-right="#k8"
-                                            class="keypad" id="k7">7
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#pms" data-key-down="#k5" data-key-left="#k7"
-                                            data-key-right="#k9" class="keypad" id="k8">8
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#pms" data-key-down="#k6" data-key-left="#k8"
-                                            data-key-right="#MyPlex" class="keypad" id="k9">9
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#pms" data-key-down="#save" data-key-left="#k9" id="MyPlex" href=""><i
-                                            class="glyphicon unchecked"></i> <span
-                                            data-language="dialogMyPlex">Use My Plex</span></button>
-                                </td>
-                            <tr>
-                                <td>
-                                    <button data-key-up="#k7" data-key-down="#k1"
-                                            data-key-left="#navigator #settings a.selected" data-key-right="#k5"
-                                            class="keypad" id="k4">4
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#k8" data-key-down="#k2" data-key-left="#k4"
-                                            data-key-right="#k6" class="keypad" id="k5">5
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#k9" data-key-down="#k3" data-key-left="#k5"
-                                            data-key-right="#save" class="keypad" id="k6">6
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#MyPlex" data-key-down="#kb" data-key-left="#k6" id="save"><i
-                                            class="glyphicon server-plus"></i> <span data-language="dialogSettingsSave">Save</span>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button data-key-up="#k4" data-key-down="#k0"
-                                            data-key-left="#navigator #settings a.selected" data-key-right="#k2"
-                                            class="keypad" id="k1">1
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#k5" data-key-down="#kd" data-key-left="#k1"
-                                            data-key-right="#k3" class="keypad" id="k2">2
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#k6" data-key-down="#kc" data-key-left="#k2"
-                                            data-key-right="#kb" class="keypad" id="k3">3
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#save" data-key-down="#kcl" data-key-left="#k3" class="keypad"
-                                            id="kb"><i class="glyphicon left-arrow"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button data-key-up="#k1" data-key-left="#navigator #settings a.selected"
-                                            data-key-right="#kd" class="keypad" id="k0">0
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#k2" data-key-left="#k0" data-key-right="#kc" class="keypad"
-                                            id="kd">.
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#k3" data-key-left="#kd" data-key-right="#kcl" class="keypad"
-                                            id="kc">:
-                                    </button>
-                                </td>
-                                <td>
-                                    <button data-key-up="#kb" data-key-left="#kc" class="keypad" id="kcl"
-                                            data-language="dialogSettingsClear">Clear
-                                    </button>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div id="settingsMessage" class="details"></div>
-                </form>
-            </div>
-        </div>
-        <div id="options" class="dialog" style="display: none;">
-            <div class="header"><span data-language="dialogOptions">Options</span></div>
-            <div class="content">
-                <div class="details"><a data-key-left="#navigator #settings a.selected"
-                                        data-key-down="#optionTimeDisplay" id="optionTranscoding" href=""><i
-                        class="glyphicon unchecked"></i> <span
-                        data-language="dialogOptionsHLS">Enable HTTP transcoding</span></a></div>
-                <div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionTranscoding"
-                                        data-key-down="#optionTitleOverlays" id="optionTimeDisplay" href=""><i
-                        class="glyphicon unchecked"></i> <span
-                        data-language="dialogOptions24Hour">Display 24 hour time</span></a></div>
-                <div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionTimeDisplay"
-                                        data-key-down="#optionNoThemeMusic" id="optionTitleOverlays" href=""><i
-                        class="glyphicon unchecked"></i> <span data-language="dialogOptionsPosters">Hide title overlays on posters</span></a>
-                </div>
-                <div class="details"><a data-key-left="#navigator #settings a.selected"
-                                        data-key-up="#optionTitleOverlays" data-key-down="#optionDisableNextEpisodePlay"
-                                        id="optionNoThemeMusic" href=""><i class="glyphicon unchecked"></i> <span
-                        data-language="dialogOptionsThemeMusic">Disable series theme music</span></a></div>
-                <div class="details"><a data-key-left="#navigator #settings a.selected"
-                                        data-key-up="#optionNoThemeMusic" data-key-down="#optionBackdropHover"
-                                        id="optionDisableNextEpisodePlay" href=""><i class="glyphicon unchecked"></i>
-                    <span data-language="dialogOptionsAutoplay">Disable autoplay of next episode</span></a></div>
-                <div class="details"><a data-key-left="#navigator #settings a.selected"
-                                        data-key-up="#optionDisableNextEpisodePlay"
-                                        data-key-down="#optionDisableWatchedIcons" id="optionBackdropHover" href=""><i
-                        class="glyphicon unchecked"></i> <span data-language="dialogOptionsBackgroundArt">Show background art on thumbnail focus</span></a>
-                </div>
-                <div class="details"><a data-key-left="#navigator #settings a.selected"
-                                        data-key-up="#optionBackdropHover" data-key-down="#optionLargeText"
-                                        id="optionDisableWatchedIcons" href=""><i class="glyphicon unchecked"></i> <span
-                        data-language="dialogOptionsUnwatchedIcons">Disable unwatched icons on thumbnails</span></a>
-                </div>
-                <div class="details"><a data-key-left="#navigator #settings a.selected"
-                                        data-key-up="#optionDisableWatchedIcons" data-key-down="#optionDebugDetails"
-                                        id="optionLargeText" href=""><i class="glyphicon unchecked"></i> <span
-                        data-language="dialogOptionsLargeFont">User Extra Large fonts for all text</span></a></div>
-                <div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionLargeText"
-                                        data-key-down="#bandwidthUp" id="optionDebugDetails" href=""><i
-                        class="glyphicon unchecked"></i> <span data-language="dialogOptionsDebug">Provide debug and system resource information</span></a>
-                </div>
-
-                <div class="details">
-                    <span>Bandwidth:&nbsp;</span>
-                    <a data-key-left="#navigator #settings a.selected" data-key-up="#optionDebugDetails"
-                       data-key-right="#bandwidthDown" data-key-down="#windWUp" id="bandwidthUp" href="">
-                        <i class="glyphicon circle-arrow-left"></i>
-                    </a>
-                    <span id="bandwidth">None</span>
-
-                    <a data-key-left="#bandwidthUp" data-key-down="#windWUp" id="bandwidthDown" href="">
-                        <i class="glyphicon circle-arrow-right"></i>
-                        <span data-language="bandwidthDown"></span>
-                    </a>
-                </div>
-
-                <div class="details">
-                    <span>Window Width:&nbsp;&nbsp;</span>
-
-                    <input id="windWEntry" data-key-left="#navigator #settings a.selected" data-key-right="#windWUp"
-                           data-key-up="#bandwidthUp" data-key-down="windHEntry" type="text" style="width:80px;"/>
-
-                    <a id="windWUp" data-key-left="#windWEntry" data-key-right="#windWDown" data-key-up="#bandwidthUp"
-                       data-key-down="#windHUp" href="">
-                        <i class="glyphicon circle-plus"></i>
-
-                    </a>
-                    <a id="windWDown" data-key-left="#windWUp" data-key-up="#bandwidthUp" data-key-down="windHDown"
-                       href="">
-                        <i class="glyphicon circle-minus"></i>
-
-                    </a>
-                </div>
-                <div class="details">
-                    <span>Window Height:&nbsp;</span>
-                    <input id="windHEntry" data-key-left="#navigator #settings a.selected" data-key-right="#windHUp"
-                           data-key-up="#windWEntry" data-key-down="#resetOptions" type="text" style="width:80px;"/>
-
-                    <a id="windHUp" data-key-left="#windHEntry" data-key-right="#windHDown" data-key-up="#windWUp"
-                       data-key-down="#resetOptions" href="">
-                        <i class="glyphicon circle-plus"></i>
-                    </a>
-                    <a id="windHDown" data-key-left="#windHUp" data-key-up="#windWDown" data-key-down="#resetOptions"
-                       href="">
-                        <i class="glyphicon circle-minus"></i>
-
-                    </a>
-                </div>
-
-                <div class="details">
-                    <span>Reset Options:&nbsp;</span>
-                    <a id="resetOptions" data-key-left="#navigator #settings a.selected" data-key-up="#windWUp" href="">
-                        <i class="glyphicon restart"></i>
-                    </a>
-
-                </div>
-
-            </div>
+        <div id="settings" class="menu vertical">
+            <ul>
+                <li><a data-key-index="1" data-title="About" data-key="about" data-section-type="about"
+                       href=""><span data-language="sectionAbout">About</span></a></li>
+                <li><a data-key-index="2" data-title="Help" data-key="help" data-section-type="help"
+                       data-language="sectionHelp" href=""><span data-language="sectionHelp">Help</span></a></li>
+                <li><a data-key-index="3" data-title="Settings" data-key="settings" data-section-type="settings"
+                       href=""><span data-language="sectionSettings">Settings</span></a></li>
+                <li><a data-key-index="4" data-title="Options" data-key="options" data-section-type="options"
+                       href=""><span data-language="sectionOptions">Options</span></a></li>
+                <li><a data-key-index="5" data-title="Quit" data-key="quit" data-section-type="quit" href=""
+                       class="selected"><span data-language="sectionQuit">Quit</span></a></li>
+            </ul>
         </div>
     </div>
+    <div id="navigatorSwitch" class="action"><i class="glyphicon message-forward"></i></div>
+</div>
+<div id="media">
+<div id="server">
+    <div id="serverName"></div>
+    <div id="serverSelect" style="display: none;"></div>
+</div>
+<div id="recentlyAdded" class="media-quick-menu" style="display: none;">
+    <div class="content">
+        <ul></ul>
+    </div>
+    <div class="name"><span data-language="menuRecentlyAdded">Recently Added</span></div>
+</div>
+<div id="search" class="dialog" style="display: none;">
+    <div class="header"><span data-language="dialogSearch">Search</span></div>
+    <div class="content">
+        <form id="searchForm" action="media.html" method="get">
+            <p data-language="dialogSearchPrompt">Enter you query in the field below and press find to search
+                ...</p>
+
+            <div class="details"><input data-key-down="#find" name="query" id="query" type="text" value=""
+                                        required="required" placeholder="e.g. metallica"/></div>
+            <div class="actions">
+                <button data-key-up="#query" data-key-left="#navigator #sections a.selected" id="find"
+                        data-language="dialogFindButton">Find
+                </button>
+            </div>
+            <input type="hidden" name="action" value="search"/>
+        </form>
+    </div>
+</div>
+<div id="about" class="dialog" style="display: none;">
+    <div class="header"><span data-language="dialogAbout">About</span></div>
+    <div class="content">
+
+        <h3><img src="system/images/plex.png"/></h3>
+
+        <p>Build 0.7.0.6 - 2014/07/01</p>
+
+        <p data-language="dialogAboutCreated">Created by ntlord and moyekj. Special thanks to Simon J. Hogan</p>
+
+        <p data-language="dialogAboutCopyright">&copy; 2014</p>
+
+        <p>https://plex.tv | glyphicons.com | www.sithari.com.au</p>
+    </div>
+</div>
+<div id="help" class="dialog" style="display: none;">
+    <div class="header"><span data-language="dialogHelp">Help</span></div>
+    <div class="content">
+        <p data-language="dialogHelpInfo">Help documentation can be found at http://plex.sithari.com.au</p>
+        <h4 data-language="dialogNotice">Notice</h4>
+
+        <p data-language="dialogRequires">This application requires access to PLEX Media Server in order to
+            function.</p>
+
+        <p data-language="dialogHelpPMS">PLEX Media Server can be downloaded from https://plex.tv</p>
+    </div>
+</div>
+<div id="myplexdialog" class="dialog" style="display: none;">
+    <div class="header"><span data-language="myplexSettings">My Plex Login</span></div>
+
+    <div class="details">
+        <div style="margin-top: 70px" class="details">
+            <a data-key-left="#navigator #settings a.selected" data-key-down="#username" id="myPlexEnabled" href="">
+                <i class="glyphicon check"></i>
+                <span data-language="myPlexEnabled">Use My Plex</span>
+            </a>
+        </div>
+
+        <input style="margin-top: 30px;border: 3px solid #FF9900;border-radius: 10px" data-key-down="#pass"
+               data-key-up="#myPlexEnabled" name="username" id="username" type="text" value=""
+               required="required" placeholder="Username"
+               autocomplete="off"/>
+
+        <input style="margin-top: 30px;border: 3px solid #FF9900;border-radius: 10px" data-key-up="#username"
+               data-key-down="#signin" name="pass" id="pass" type="password" value=""
+               required="required" placeholder="Password"
+               autocomplete="off"/>
+
+        <div class="buttons">
+            <button style="margin-top: 10px;" data-key-up="#pass" data-key-right="#clear" id="signin">Sign In
+            </button>
+            <button data-key-left="#signin" id="clear">Clear
+            </button>
+        </div>
+
+
+    </div>
+    <div style="margin-top: 20px" id="myplexMessage" class="details"></div>
+</div>
+<div id="config" class="dialog" style="display: none;">
+    <div class="header"><span data-language="dialogSettings">Settings</span></div>
+    <div id="serverSelection" class="content">
+        <form onsubmit="return false;">
+            <p id="prompt" data-language="dialogSettingsPrompt">Enter you PLEX Media Server (PMS) ip address and port
+                below</p>
+
+            <div class="details"><input data-key-down="#MyPlex" name="pms" id="pms" type="text" value=""
+                                        required="required" placeholder="e.g. 192.168.0.3:32400"
+                                        autocomplete="off"/></div>
+            <div class="actions">
+                <table>
+                    <tr>
+                        <td>
+                            <button data-key-up="#pms" data-key-down="#k4"
+                                    data-key-left="#navigator #settings a.selected" data-key-right="#k8"
+                                    class="keypad" id="k7">7
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#pms" data-key-down="#k5" data-key-left="#k7"
+                                    data-key-right="#k9" class="keypad" id="k8">8
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#pms" data-key-down="#k6" data-key-left="#k8"
+                                    data-key-right="#MyPlex" class="keypad" id="k9">9
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#pms" data-key-down="#save" data-key-left="#k9" id="MyPlex" href=""><i
+                                    class="glyphicon unchecked"></i> <span
+                                    data-language="dialogMyPlex">Use My Plex</span></button>
+                        </td>
+                    <tr>
+                        <td>
+                            <button data-key-up="#k7" data-key-down="#k1"
+                                    data-key-left="#navigator #settings a.selected" data-key-right="#k5"
+                                    class="keypad" id="k4">4
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#k8" data-key-down="#k2" data-key-left="#k4"
+                                    data-key-right="#k6" class="keypad" id="k5">5
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#k9" data-key-down="#k3" data-key-left="#k5"
+                                    data-key-right="#save" class="keypad" id="k6">6
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#MyPlex" data-key-down="#kb" data-key-left="#k6" id="save"><i
+                                    class="glyphicon server-plus"></i> <span
+                                    data-language="dialogSettingsSave">Save</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button data-key-up="#k4" data-key-down="#k0"
+                                    data-key-left="#navigator #settings a.selected" data-key-right="#k2"
+                                    class="keypad" id="k1">1
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#k5" data-key-down="#kd" data-key-left="#k1"
+                                    data-key-right="#k3" class="keypad" id="k2">2
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#k6" data-key-down="#kc" data-key-left="#k2"
+                                    data-key-right="#kb" class="keypad" id="k3">3
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#save" data-key-down="#kcl" data-key-left="#k3" class="keypad"
+                                    id="kb"><i class="glyphicon left-arrow"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button data-key-up="#k1" data-key-left="#navigator #settings a.selected"
+                                    data-key-right="#kd" class="keypad" id="k0">0
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#k2" data-key-left="#k0" data-key-right="#kc" class="keypad"
+                                    id="kd">.
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#k3" data-key-left="#kd" data-key-right="#kcl" class="keypad"
+                                    id="kc">:
+                            </button>
+                        </td>
+                        <td>
+                            <button data-key-up="#kb" data-key-left="#kc" class="keypad" id="kcl"
+                                    data-language="dialogSettingsClear">Clear
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id="settingsMessage" class="details"></div>
+        </form>
+    </div>
+</div>
+<div id="options" class="dialog" style="display: none;">
+    <div class="header"><span data-language="dialogOptions">Options</span></div>
+    <div class="content">
+        <div class="details"><a data-key-left="#navigator #settings a.selected"
+                                data-key-down="#optionTimeDisplay" id="optionTranscoding" href=""><i
+                class="glyphicon unchecked"></i> <span
+                data-language="dialogOptionsHLS">Enable HTTP transcoding</span></a></div>
+        <div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionTranscoding"
+                                data-key-down="#optionTitleOverlays" id="optionTimeDisplay" href=""><i
+                class="glyphicon unchecked"></i> <span
+                data-language="dialogOptions24Hour">Display 24 hour time</span></a></div>
+        <div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionTimeDisplay"
+                                data-key-down="#optionNoThemeMusic" id="optionTitleOverlays" href=""><i
+                class="glyphicon unchecked"></i> <span data-language="dialogOptionsPosters">Hide title overlays on posters</span></a>
+        </div>
+        <div class="details"><a data-key-left="#navigator #settings a.selected"
+                                data-key-up="#optionTitleOverlays" data-key-down="#optionDisableNextEpisodePlay"
+                                id="optionNoThemeMusic" href=""><i class="glyphicon unchecked"></i> <span
+                data-language="dialogOptionsThemeMusic">Disable series theme music</span></a></div>
+        <div class="details"><a data-key-left="#navigator #settings a.selected"
+                                data-key-up="#optionNoThemeMusic" data-key-down="#optionBackdropHover"
+                                id="optionDisableNextEpisodePlay" href=""><i class="glyphicon unchecked"></i>
+            <span data-language="dialogOptionsAutoplay">Disable autoplay of next episode</span></a></div>
+        <div class="details"><a data-key-left="#navigator #settings a.selected"
+                                data-key-up="#optionDisableNextEpisodePlay"
+                                data-key-down="#optionDisableWatchedIcons" id="optionBackdropHover" href=""><i
+                class="glyphicon unchecked"></i> <span data-language="dialogOptionsBackgroundArt">Show background art on thumbnail focus</span></a>
+        </div>
+        <div class="details"><a data-key-left="#navigator #settings a.selected"
+                                data-key-up="#optionBackdropHover" data-key-down="#optionLargeText"
+                                id="optionDisableWatchedIcons" href=""><i class="glyphicon unchecked"></i> <span
+                data-language="dialogOptionsUnwatchedIcons">Disable unwatched icons on thumbnails</span></a>
+        </div>
+        <div class="details"><a data-key-left="#navigator #settings a.selected"
+                                data-key-up="#optionDisableWatchedIcons" data-key-down="#optionDebugDetails"
+                                id="optionLargeText" href=""><i class="glyphicon unchecked"></i> <span
+                data-language="dialogOptionsLargeFont">User Extra Large fonts for all text</span></a></div>
+        <div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionLargeText"
+                                data-key-down="#bandwidthUp" id="optionDebugDetails" href=""><i
+                class="glyphicon unchecked"></i> <span data-language="dialogOptionsDebug">Provide debug and system resource information</span></a>
+        </div>
+
+        <div class="details">
+            <span>Bandwidth:&nbsp;</span>
+            <a data-key-left="#navigator #settings a.selected" data-key-up="#optionDebugDetails"
+               data-key-right="#bandwidthDown" data-key-down="#lpadUp" id="bandwidthUp" href="">
+                <i class="glyphicon circle-arrow-left"></i>
+            </a>
+            <span id="bandwidth">None</span>
+
+            <a data-key-left="#bandwidthUp" data-key-down="#lpadUp" id="bandwidthDown" href="">
+                <i class="glyphicon circle-arrow-right"></i>
+                <span data-language="bandwidthDown"></span>
+            </a>
+        </div>
+
+        <div class="details">
+            <span>Left Padding:&nbsp;&nbsp;</span>
+
+            <input id="lpadEntry" data-key-left="#navigator #settings a.selected" data-key-right="#lpadUp"
+                   data-key-up="#bandwidthUp" data-key-down="rpadEntry" type="text" style="width:80px;"/>
+
+            <a id="lpadUp" data-key-left="#lpadEntry" data-key-right="#lpadDown" data-key-up="#bandwidthUp"
+               data-key-down="#rpadUp" href="">
+                <i class="glyphicon circle-plus"></i>
+
+            </a>
+            <a id="lpadDown" data-key-left="#lpadUp" data-key-up="#bandwidthUp" data-key-down="#rpadDown"
+               href="">
+                <i class="glyphicon circle-minus"></i>
+
+            </a>
+        </div>
+        <div class="details">
+            <span>Right Padding&nbsp;</span>
+            <input id="rpadEntry" data-key-left="#navigator #settings a.selected" data-key-right="#rpadHUp"
+                   data-key-up="#lpadEntry" data-key-down="#resetOptions" type="text" style="width:80px;"/>
+
+            <a id="rpadUp" data-key-left="#rpadEntry" data-key-right="#rpadDown" data-key-up="#lpadUp"
+               data-key-down="#resetOptions" href="">
+                <i class="glyphicon circle-plus"></i>
+            </a>
+            <a id="rpadDown" data-key-left="#rpadUp" data-key-up="#lpadDown" data-key-down="#resetOptions"
+               href="">
+                <i class="glyphicon circle-minus"></i>
+
+            </a>
+        </div>
+
+        <div class="details">
+            <span>Reset Options:&nbsp;</span>
+            <a id="resetOptions" data-key-left="#navigator #settings a.selected" data-key-up="#rpadUp" href="">
+                <i class="glyphicon restart"></i>
+            </a>
+
+        </div>
+
+    </div>
+</div>
+</div>
 </div>
 <div id="preview" style="display: none;">
     <div id="previewContent" class="content"></div>

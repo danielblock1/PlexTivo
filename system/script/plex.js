@@ -25,6 +25,7 @@ function PLEX() {
     this.PLEX_MYPLEX_USERNAME = "plexMyPlexUsername";
     this.PLEX_MYPLEX_PASSWORD = "plexMyPlexPass";;
     this.PLEX_LOCAL_PORT = "plexLocalPort";
+    this.PLEX_PADDING_PREFIX="plexPadding_";
 
     this.X_Plex_Client_Identifier = localStorage.getItem(this.PLEX_SESSION_ID);
     this.X_Plex_Product = "Tivo";
@@ -58,6 +59,19 @@ PLEX.prototype.setMyPlexEnabled = function(enable){
     }
  };
 
+PLEX.prototype.getPadding =function(side){
+    var padding = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_PADDING_PREFIX + side);
+    if (padding == null || padding == "null") {
+        padding = "0";
+        this.setPadding(side, padding);
+    }
+    return padding;
+};
+
+PLEX.prototype.setPadding =function(side, padding){
+    localStorage.setItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_PADDING_PREFIX + side ,padding);
+
+};
 
 PLEX.prototype.getPlexHeight = function () {
     var height = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_HEIGHT);

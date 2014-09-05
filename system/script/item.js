@@ -27,7 +27,7 @@ MediaMetadata.prototype.initialise = function () {
     this.sectionKey = $.querystring().sectionKey;
     this.key = decodeURIComponent($.querystring().key);
 
-
+    $("#menuBar").css("left", this.plex.getPadding("L") +"px");
     $("#menu a").tooltipster({position: "right"});
 
 
@@ -111,7 +111,7 @@ MediaMetadata.prototype.initialise = function () {
 
         $("#applicationWallpaper").css("background-image", "url(" + self.plex.getTranscodedPath(mediaItem.attr("art"), self.plex.getPlexWidth(), self.plex.getPlexHeight()) + ")");
         $("#mediaPreviewContent").html(self.plex.getMediaPreviewHtml(xml));
-
+        $("#mediaPreviewContent").css("right",self.plex.getPadding("R") +"px");
         if ($("#watchStatus").hasClass("unwatched-icon")) {
             $("#watched i").removeClass("ok").addClass("remove");
         }

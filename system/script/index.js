@@ -42,7 +42,6 @@ function Menu() {
     }
 
 
-
     if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "largeText") == "1") {
         $("body").addClass("xlarge");
     }
@@ -162,27 +161,26 @@ Menu.prototype.initialise = function (focus) {
     var self = this;
 
 
-    if(this.plex.isMyPlexEnabled()) {
+    if (this.plex.isMyPlexEnabled()) {
 
         this.plex.resetAuthenticationToken();
 
         try {
             this.plex.login(this.plex.getUsername(), this.plex.getPassword());
-        }catch(err){
+        } catch (err) {
             console.log("error:" + err);
-            localStorage.removeItem(this.PLEX_OPTIONS_PREFIX+this.PLEX_MYPLEX_USERNAME);
-            localStorage.removeItem(this.PLEX_OPTIONS_PREFIX+this.PLEX_MYPLEX_PASSWORD);
+            localStorage.removeItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_MYPLEX_USERNAME);
+            localStorage.removeItem(this.PLEX_OPTIONS_PREFIX + this.PLEX_MYPLEX_PASSWORD);
             //localStorage.removeItem(this.PL)
             location.reload();
         }
         var server = this.plex.getMyPlexServers();
 
-        if(server != null){
-            this.plex.setServerUrl("http://" + server.url +":" + server.port);
+        if (server != null) {
+            this.plex.setServerUrl("http://" + server.url + ":" + server.port);
 
         }
     }
-
 
 
     var pms = this.plex.getServerUrl();
@@ -732,6 +730,8 @@ Menu.prototype.resetOptions = function () {
     localStorage.setItem(self.PLEX_OPTIONS_PREFIX + "watchedIcons", null);
     localStorage.setItem(self.PLEX_OPTIONS_PREFIX + "largeText", null);
     localStorage.setItem(self.PLEX_OPTIONS_PREFIX + "debug", null);
+    localStorage.setItem(self.PLEX_OPTIONS_PREFIX + "plexPadding_L", null);
+    localStorage.setItem(self.PLEX_OPTIONS_PREFIX + "plexPadding_R", null);
 
 };
 
@@ -777,11 +777,11 @@ Menu.prototype.prevBandwidthOption = function () {
 Menu.prototype.optionsDialog = function (event) {
     var self = this;
 
-    var winWidth = self.plex.getPlexWidth();
-    var winHeight = self.plex.getPlexHeight();
+    var leftPad = self.plex.getPadding("L");
+    var rightPad = self.plex.getPadding("R");
 
-    $("#options input#windWEntry").val(winWidth);
-    $("#options input#windHEntry").val(winHeight);
+    $("#options input#lpadEntry").val(leftPad);
+    $("#options input#rpadEntry").val(rightPad);
 
     if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "bandwidthSelection") != null) {
         var index = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "bandwidthSelection");
@@ -846,13 +846,34 @@ Menu.prototype.optionsDialog = function (event) {
         $(this).focus();
     });
 
+    $("#options input#lpadEntry").on("input", function (event) {
+        var padding = $("#options input#lpadEntry").val();
+        var padNum = Number(padding);
+        if (padNum != null && padNum != "NaN" && padNum > 0) {
+            $("#options input#lpadEntry").val(padNum);
+            self.plex.setPadding("L", padNum);
+        } else {
+            $("#options input#lpadEntry").val(0);
+        }
+    });
 
-    $("#options a#windWUp").click(function (event) {
+    $("#options input#rpadEntry").on("input", function (event) {
+        var padding = $("#options input#rpadEntry").val();
+        var padNum = Number(padding);
+        if (padNum != null && padNum != "NaN" && padNum > 0) {
+            $("#options input#rpadEntry").val(padNum);
+            self.plex.setPadding("R", padNum);
+        } else {
+            $("#options input#rpadEntry").val(0);
+        }
+    });
+
+    $("#options a#lpadUp").click(function (event) {
         event.preventDefault();
-        value = Number($("#options input#windWEntry").val());
+        value = Number($("#options input#lpadEntry").val());
         value++;
-        self.plex.setPlexWidth(value);
-        $("#options input#windWEntry").val(self.plex.getPlexWidth());
+        self.plex.setPadding("L", value);
+        $("#options input#lpadEntry").val(self.plex.getPadding("L"));
 
     });
 
@@ -862,28 +883,32 @@ Menu.prototype.optionsDialog = function (event) {
 
     });
 
-    $("#options a#windWDown").click(function (event) {
+    $("#options a#lpadDown").click(function (event) {
         event.preventDefault();
-        value = Number($("#options input#windWEntry").val());
-        value--;
-        self.plex.setPlexWidth(value);
-        $("#options input#windWEntry").val(self.plex.getPlexWidth());
+        value = Number($("#options input#lpadEntry").val());
+        if (value > 0) {
+            value--;
+        }
+        self.plex.setPadding("L", value);
+        $("#options input#lpadEntry").val(self.plex.getPadding("L"));
     });
 
-    $("#options a#windHUp").click(function (event) {
+    $("#options a#rpadUp").click(function (event) {
         event.preventDefault();
-        value = Number($("#options input#windHEntry").val());
+        value = Number($("#options input#rpadEntry").val());
         value++;
-        self.plex.setPlexHeight(value);
-        $("#options input#windHEntry").val(self.plex.getPlexHeight());
+        self.plex.setPadding("R", value);
+        $("#options input#rpadEntry").val(self.plex.getPadding("R"));
     });
 
-    $("#options a#windHDown").click(function (event) {
+    $("#options a#rpadDown").click(function (event) {
         event.preventDefault();
-        value = Number($("#options input#windHEntry").val());
-        value--;
-        self.plex.setPlexHeight(value);
-        $("#options input#windHEntry").val(self.plex.getPlexHeight());
+        value = Number($("#options input#rpadEntry").val());
+        if (value > 0) {
+            value--;
+        }
+        self.plex.setPadding("R", value);
+        $("#options input#rpadEntry").val(self.plex.getPadding("R"));
     });
 
     $("#options a#bandwidthUp").click(function (event) {
@@ -1025,7 +1050,7 @@ Menu.prototype.toggleMenu = function () {
     }
 };
 
-Menu.prototype.myPlexDialog= function (init) {
+Menu.prototype.myPlexDialog = function (init) {
     var self = this;
 
     $("#config").fadeOut(1000);
@@ -1036,7 +1061,7 @@ Menu.prototype.myPlexDialog= function (init) {
             $("#signin").focus();
         }
     });
-    $("#myplexdialog a#myPlexEnabled").click(function(event){
+    $("#myplexdialog a#myPlexEnabled").click(function (event) {
         event.preventDefault();
 
 
@@ -1065,13 +1090,13 @@ Menu.prototype.myPlexDialog= function (init) {
     var password = self.plex.getPassword(); //get pass from storage
 
     //as long as username and password retrieved for storage are good, set the text boxes
-    if(username != null && password != null){
+    if (username != null && password != null) {
         $("#username").val(username);
         $("#pass").val(password);
     }
 
     //if we are already logged in, set the gui field correctly
-    if(self.plex.isLoggedIn()){
+    if (self.plex.isLoggedIn()) {
 
         $("#username").attr("readonly", "readonly");
         $("#pass").attr("readonly", "readonly");
@@ -1080,20 +1105,20 @@ Menu.prototype.myPlexDialog= function (init) {
         $("#signin").text("Sign Out");
     }
 
-    $("#clear").unbind("click").click(function(event){ //we unbind before bind, because of the switching back and forth
+    $("#clear").unbind("click").click(function (event) { //we unbind before bind, because of the switching back and forth
         $("#username").val("");                        //between my plex and the local server selection screen
         $("#pass").val("");
         localStorage.removeItem(self.PLEX_OPTIONS_PREFIX + self.PLEX_MYPLEX_USERNAME);
         localStorage.removeItem(self.PLEX_OPTIONS_PREFIX + self.PLEX_MYPLEX_PASSWORD);
     });
 
-    $("#signin").unbind("click").click(function(event){
+    $("#signin").unbind("click").click(function (event) {
 
         event.stopPropagation();
         event.preventDefault();
 
         //if we are logged in, "sign out"
-        if(self.plex.isLoggedIn()){
+        if (self.plex.isLoggedIn()) {
             self.plex.resetAuthenticationToken(); //clear out auth token
             $("#signin").text("Sign In");
             $("#username").removeAttr("readonly");
@@ -1101,11 +1126,11 @@ Menu.prototype.myPlexDialog= function (init) {
             $("#clear").removeAttr("disabled");
             $("#clear").attr("style", "color: white;"); //enable clear button
 
-        }else{ //we are logged out, so sign in
+        } else { //we are logged out, so sign in
             var uname = $("#username").val(); //get username from txt box
             var pass = $("#pass").val(); //get pass from txt box
 
-            if(uname != null && uname !="" && pass !=null && pass!="") { //only login if the username and password at least seem correct
+            if (uname != null && uname != "" && pass != null && pass != "") { //only login if the username and password at least seem correct
                 $("#pass").attr("readonly", "readonly");
                 console.log("Logging in:" + uname);
                 try {
@@ -1130,7 +1155,7 @@ Menu.prototype.myPlexDialog= function (init) {
                     location.reload();
                 }
 
-            }else{
+            } else {
                 $("#myplexMessage").show();
                 $("#myplexMessage").html("Please Enter a Username and Password");
                 $("#myplexMessage").fadeOut(5000);
@@ -1142,9 +1167,9 @@ Menu.prototype.myPlexDialog= function (init) {
         // Up Arrow
         if (event.which == 38) {
             if ($(this).data("keyUp")) {
-                if($($(this).data("keyUp")).attr("readonly") != null){
+                if ($($(this).data("keyUp")).attr("readonly") != null) {
                     $("#myPlexEnabled").focus();
-                }else {
+                } else {
                     $($(this).data("keyUp")).focus();
                 }
 
@@ -1156,9 +1181,9 @@ Menu.prototype.myPlexDialog= function (init) {
         if (event.which == 40) {
 
             if ($(this).data("keyDown")) {
-                if($($(this).data("keyDown")).attr("readonly") != null){
+                if ($($(this).data("keyDown")).attr("readonly") != null) {
                     $("#signin").focus();
-                }else {
+                } else {
                     $($(this).data("keyDown")).focus();
                 }
                 event.preventDefault();
@@ -1176,7 +1201,7 @@ Menu.prototype.myPlexDialog= function (init) {
         // Right Arrow
         if (event.which == 39) {
             if ($(this).data("keyRight")) {
-                if($($(this).data("keyRight")).attr("disabled") == null) {
+                if ($($(this).data("keyRight")).attr("disabled") == null) {
                     $($(this).data("keyRight")).focus();
                 }
                 event.preventDefault();
@@ -1204,7 +1229,7 @@ Menu.prototype.settingsDialog = function (init) {
     //var device = document.getElementById("device");
     //var ip = device.net_ipAddress;
 
-    if(self.plex.isMyPlexEnabled()){
+    if (self.plex.isMyPlexEnabled()) {
         self.myPlexDialog(true);
         return;
     }
@@ -1213,7 +1238,7 @@ Menu.prototype.settingsDialog = function (init) {
 
     $("#config").fadeIn(400, function () {
         //if (init) {
-            $("#MyPlex").focus();
+        $("#MyPlex").focus();
         //}
     });
 
@@ -1246,47 +1271,47 @@ Menu.prototype.settingsDialog = function (init) {
         location.reload();
     });
 
-    $("#MyPlex").unbind("click").click(function(event){
+    $("#MyPlex").unbind("click").click(function (event) {
         event.preventDefault();
         self.plex.setMyPlexEnabled(true);
         self.myPlexDialog(true);
     });
 
     /*$("#scan").click(function () {
-        event.preventDefault();
-        self.scanErrorCount = 0;
-        self.scanFoundCount = 0;
-        if (!ip) {
-            ip = "192.168.0.3";
-        }
+     event.preventDefault();
+     self.scanErrorCount = 0;
+     self.scanFoundCount = 0;
+     if (!ip) {
+     ip = "192.168.0.3";
+     }
 
-        self.showLoader("Scanning");
-        $("#settingsMessage").html("");
-        $("#settingsMessage").show();
-        self.plex.scanNetwork(ip, function (xml) {
-            self.scanFoundCount++;
-            $("#pms").val(this.url.substr(this.url.indexOf("://") + 3));
-            servers.push($(xml).find("MediaContainer:first").attr("friendlyName") + "|" + this.url);
-            $("#settingsMessage").html(settings.language.dialogSettingsFoundMessage + this.url + " " + $(xml).find("MediaContainer:first").attr("friendlyName"));
-            $("#settingsMessage").fadeOut(3000);
-            self.showLoader("PMS found");
-        }, function () {
-            self.scanErrorCount++;
-            if (self.scanErrorCount >= 255) {
-                $("#settingsMessage").html(settings.language.dialogSettingsNotFoundMessage);
-                $("#settingsMessage").fadeOut(3000);
-                self.showLoader("Error");
-            }
-        }, function (xml) {
-            localStorage.setItem(self.PLEX_SERVER_LIST, servers.unique().join(","));
+     self.showLoader("Scanning");
+     $("#settingsMessage").html("");
+     $("#settingsMessage").show();
+     self.plex.scanNetwork(ip, function (xml) {
+     self.scanFoundCount++;
+     $("#pms").val(this.url.substr(this.url.indexOf("://") + 3));
+     servers.push($(xml).find("MediaContainer:first").attr("friendlyName") + "|" + this.url);
+     $("#settingsMessage").html(settings.language.dialogSettingsFoundMessage + this.url + " " + $(xml).find("MediaContainer:first").attr("friendlyName"));
+     $("#settingsMessage").fadeOut(3000);
+     self.showLoader("PMS found");
+     }, function () {
+     self.scanErrorCount++;
+     if (self.scanErrorCount >= 255) {
+     $("#settingsMessage").html(settings.language.dialogSettingsNotFoundMessage);
+     $("#settingsMessage").fadeOut(3000);
+     self.showLoader("Error");
+     }
+     }, function (xml) {
+     localStorage.setItem(self.PLEX_SERVER_LIST, servers.unique().join(","));
 
-            if (servers.unique().length > 1) {
-                $("#settingsMessage").html(settings.language.dialogSettingsMultipleMessage);
-                $("#settingsMessage").fadeOut(3000);
-            }
-            self.hideLoader();
-        });
-    });*/
+     if (servers.unique().length > 1) {
+     $("#settingsMessage").html(settings.language.dialogSettingsMultipleMessage);
+     $("#settingsMessage").fadeOut(3000);
+     }
+     self.hideLoader();
+     });
+     });*/
 
     $("#config .keypad").unbind("click").click(function (event) {
         var key = $(this).text();
@@ -1332,7 +1357,7 @@ Menu.prototype.settingsDialog = function (init) {
 
         // Down Arrow
         if (event.which == 40) {
-           if ($(this).data("keyDown")) {
+            if ($(this).data("keyDown")) {
                 $($(this).data("keyDown")).focus();
                 event.preventDefault();
             }

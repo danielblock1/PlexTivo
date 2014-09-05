@@ -48,6 +48,8 @@ Media.prototype.initialise = function () {
 
     $("#menu a").tooltipster({position: "right"});
     $("#menuFilterView a").tooltipster();
+    $("#menuBar").css("left",this.plex.getPadding("L") +"px");
+    $("#mediaView").css("left", (61 + Number(this.plex.getPadding("L"))) + "px");
 
 
     if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "largeText") == "1") {
