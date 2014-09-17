@@ -208,6 +208,10 @@ MediaMetadata.prototype.initialise = function () {
             });
 
             $("#play").attr("href", "player.html?key=" + mediaItem.attr("key") + "&autoplay=true&subtitleId=" + $(".subtitles").text() + "&audioId=" + $(".audio").text());
+            $("#play").click(function(event){
+                event.preventDefault();
+                self.multipartDialog();
+             });
             $("#play").show();
             $("#play").focus();
         } else {
@@ -218,7 +222,104 @@ MediaMetadata.prototype.initialise = function () {
     });
 
 };
+MediaMetadata.prototype.multipartDialog = function (xml) {
+    var self = this;
+    var media = $(self.cache).find("Media");
+    var href = $("#play").attr("href"); //get the current player URL
+    if (media.length > 1) {
+        var html = "<span style=\"...\" class=\"options\">Select version:</span>";
+        media.each(function (index, value) {
+            html += "<a data-key-index=\"10" + index + "\" id=\"x" + index + "\" href=\"\"><marquee id=\"y" + index + "\" behavior=\"alternate\" scrollamount=\"6\" scrolldelay=\"125\"><span style=\"overflow:hidden; white-space: nowrap\" class=\"option\">" + $(this).find("Part:first").attr("file") + "</span></marquee></a>";
+        });
+        $("#dialog .content").html(html);
 
+        $("#dialog a").off();
+
+
+        $("#dialog a").hover(function () {
+                $(this).focus();
+                $(this).find("marquee")[0].start();
+            },function(){
+                $(this).find("marquee")[0].stop()
+            }
+
+
+        );
+
+        $("#dialog a").click(function () {
+            event.preventDefault();
+            var keyIndex = Number($(this).data("keyIndex")) - 100;
+            console.log("m:" + media.length + " key:" + keyIndex);
+            //self.showLoader("Seeking");
+            $("#dialog").hide();
+
+            //add the media index and redirect
+            href = href +="&mediaIndex=" + keyIndex;
+            self.hideLoader();
+            window.location = href;
+
+        });
+
+
+        $("#dialog a").keydown(function () {
+            var current = $(this).data("keyIndex");
+            var down = Number(current) + 1;
+            var up = Number(current) - 1;
+
+            // Left Arrow
+            if (event.which == 37) {
+                event.stopPropagation();
+                event.preventDefault();
+                $("#dialog").hide();
+                $("#play").focus();
+            }
+            // Right Arrow
+            if (event.which == 39) {
+                event.stopPropagation();
+                event.preventDefault();
+                $("#dialog").hide();
+                $("#play").focus();
+            }
+            // Up Arrow
+            if (event.which == 38) {
+                event.stopPropagation();
+                event.preventDefault();
+                $("a[data-key-index='" + up + "']").focus();
+                $("#y" + (up-100))[0].start();
+                $("#y" + (current-100))[0].stop();
+            }
+
+            // Down Arrow
+            if (event.which == 40) {
+                event.stopPropagation();
+                event.preventDefault();
+                $("a[data-key-index='" + down + "']").focus();
+                $("#y" + (down-100))[0].start();
+                $("#y" + (current-100))[0].stop();
+            }
+        });
+
+        $("#dialog").show();
+        $("#dialog a:first").focus();
+
+        //turn all scrolling off by default for all media sources
+        media.each(function (index, value) {
+            $("#y" + index)[0].stop()
+        });
+
+        //turn it back on for the first one since that is getting the focus
+        $("#y0")[0].start();
+
+    } else {
+        console.log("test");
+        window.location = href;
+        //self.loadMetadata(xml,media);
+        //self.media.setAttribute('src', self.url);
+        //self.media.load();
+        //self.hideLoader();
+
+    }
+};
 MediaMetadata.prototype.getMediaChildren = function (mediaType, key) {
     this.rowCount = 0;
     var self = this;

@@ -102,6 +102,7 @@ Player.prototype.initialise = function () {
     this.media.addEventListener("timeupdate", this.timeUpdate, false);
     this.windowHeight = this.plex.getPlexHeight();
     this.windowWidth = this.plex.getPlexWidth();
+    this.mediaKey = $.querystring().mediaKey;
 
     //Direct play via standalone player
     if (self.directPlay) {
@@ -223,24 +224,33 @@ Player.prototype.openMedia = function (key) {
 
     this.plex.getMediaMetadata(this.key, function (xml) {
         self.cache = xml;
-        var container = $(xml).find("Media:first").attr("container");
-        var vcodec = $(xml).find("Media:first").attr("videoCodec");
-        var acodec = $(xml).find("Media:first").attr("audioCodec");
+        var media = $(xml).find("Media");
+        if(media.length > 1){
+            if (self.mediaKey !=null && self.mediaKey !="null" && self.mediaKey !=""){
+                media = media.eq(Number(self.mediaKey));
+            }else{
+                media = media.eq(0);
+            }
+        }
+
+        var container = media.attr("container");
+        var vcodec = media.attr("videoCodec");
+        var acodec = media.attr("audioCodec");
         // TiVo compatible video gets non-transcoding url
         if ((container == "mp4" || container == "mpegts") && vcodec == "h264" && (acodec == "aac" || acodec == "mp3"))
-            self.directUrl = self.plex.getServerUrl() + $(xml).find("Part:first").attr("key");
+            self.directUrl = self.plex.getServerUrl() + media.find("Part:first").attr("key");
         else
             self.directUrl = null;
         self.mediaKey = $(xml).find("Video:first").attr("ratingKey");
-        self.mediaUrl = $(xml).find("Part:first").attr("key");
+        self.mediaUrl = media.find("Part:first").attr("key");
         self.viewOffset = $(xml).find("Video:first").attr("viewOffset");
         self.duration = $(xml).find("Video:first").attr("duration");
         self.duration = Number(self.duration) / 1000;
         self.media.dur = self.duration;
-        self.aspectRatio = $(xml).find("Media:first").attr("aspectRatio");
-        self.frameRate = $(xml).find("Stream:first").attr("frameRate");
+        self.aspectRatio = media.attr("aspectRatio");
+        self.frameRate = media.attr("videoFrameRate");
         self.setVideoSize(self.media, self.aspectRatio, self.windowHeight, self.windowWidth);
-        
+
         if (self.directUrl == null) {
             var options = self.getTranscodingOptions();
 
@@ -293,7 +303,7 @@ Player.prototype.setVideoSize = function (videoElem, aspectRatio, windowHeight, 
         }
 
 
-    } else {
+    } else if (vidHeight < windowHeight) {
         videoElem.width = windowWidth;
         videoElem.height = vidHeight;
 
@@ -575,19 +585,7 @@ Player.prototype.initControls = function () {
             return;
         }
 
-        if (event.which == 405) { //QMENU
-            if (window.NetCastLaunchQMENU) {
-                window.NetCastLaunchQMENU();
-            }
-            return;
-        }
 
-        if (event.which == 406) { //Ratio
-            if (window.NetCastLaunchRATIO) {
-                window.NetCastLaunchRATIO();
-            }
-            return;
-        }
 
         self.showControls();
     });
@@ -632,24 +630,6 @@ Player.prototype.initControls = function () {
         event.stopPropagation();
         event.preventDefault();
         self.forward();
-        self.timerControls();
-    });
-
-    $("#qmenu").click(function (event) {
-        event.stopPropagation();
-        event.preventDefault();
-        if (window.NetCastLaunchQMENU) {
-            window.NetCastLaunchQMENU();
-        }
-        self.timerControls();
-    });
-
-    $("#ratio").click(function (event) {
-        event.stopPropagation();
-        event.preventDefault();
-        if (window.NetCastLaunchRATIO) {
-            window.NetCastLaunchRATIO();
-        }
         self.timerControls();
     });
 

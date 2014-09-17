@@ -944,7 +944,7 @@ PLEX.prototype.getHlsTranscodeUrl = function (key, options) {
     var audioBoost = options.audioBoost || "100";
     var videoResolution = options.videoResolution || "1280x720";
     var xmlId = this.X_Plex_Device_Name;
-    if (options.frameRate.match(/^23/))
+    if (options.frameRate.match(/^24/) || options.frameRate == "NTSC")
         xmlId = xmlId + "_24fps";
 
     //var url = "/video/:/transcode/universal/start.mpd?";
